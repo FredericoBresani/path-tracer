@@ -1,0 +1,27 @@
+{
+  "name": "path-tracer",
+  "version": "1.0.0",
+  "description": "Building a path tracer to a college activity",
+  "main": "path-tracer.cpp",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer < test.txt && python ./convert.py",
+    "build": "g++ path-tracer.cpp -std=c++17 -o path-tracer"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FredericoBresani/path-tracer.git"
+  },
+  "keywords": [
+    "path",
+    "tracer",
+    "CG",
+    "renderer"
+  ],
+  "author": "Frederico Bresani",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FredericoBresani/path-tracer/issues"
+  },
+  "homepage": "https://github.com/FredericoBresani/path-tracer#readme"
+}
