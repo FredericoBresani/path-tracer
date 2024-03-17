@@ -11,6 +11,7 @@ class Ambient {
         int depth = 1;
         Ambient(RGBColor c, float i, int d): color(c), ir(i), depth(d) {}
         ~Ambient() {}
+    
 };
 
 #endif

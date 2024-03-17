@@ -7,11 +7,12 @@
 #include "World.h"
 #include "Points.h"
 #include "Vectors.h"
+#include <iostream>
 
 
 class PinholeCamera: public Camera {
     public:
-        PinholeCamera(int _hr, int _vr, double d, const Vec3D& _up, const Point3D& pos, const Point3D &_lookAt, float p, int s) {
+        PinholeCamera(int _hr, int _vr, double d, const Vec3D& _up, const Point3D& pos, const Point3D &_lookAt, float p, int s, int pths) {
             h_res = _hr;
             v_res = _vr;
             distance = d;
@@ -20,10 +21,9 @@ class PinholeCamera: public Camera {
             look_at = _lookAt;
             pixel_size = p;
             n_samples = s;
+            paths = pths;
         }
         ~PinholeCamera() {}
-    private:
-        void set_sampler();
         void render(std::vector<Object*> objetos, std::vector<Light*>& lights, Ambient& ambient);
 };
 

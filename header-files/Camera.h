@@ -3,9 +3,7 @@
 
 #include "Vectors.h"
 #include "Points.h"
-#include <vector>
 #include "Object.h"
-#include "Ambient.h"
 #include "Light.h"
 
 class Camera {
@@ -14,15 +12,59 @@ class Camera {
         Point3D getPos();
         int getHr();
         int getVr();
-        virtual void render(std::vector<Object*> objects, std::vector<Light*> &lights, Ambient &ambient);
+        int getNPaths();
+        virtual void render(std::vector<Object*> objects, std::vector<Light*> &lights, Ambient &ambient) = 0;
         
         
     protected:
-        int h_res, v_res, n_samples, pixel_qtn_h, pixel_qtn_v;
+        int h_res, v_res, n_samples, pixel_qtn_h, pixel_qtn_v, paths;
         double distance, pixel_size, focal_distance, fish_eye_angle;
         Vec3D up, u, v, w, right, iup;
         Point3D camera_pos, look_at;
 
 };
+
+void Camera::makeCamera()
+{
+    // Tha camera base should follow this order {w = z, v = y, u = x}
+    pixel_qtn_h = (double)h_res/pixel_size;
+    pixel_qtn_v = (double)v_res/pixel_size;
+    Vec3D toScreen = Vec3D::normalize(look_at - camera_pos);
+    w = toScreen;
+    Vec3D WUP = w ^ up;
+    if (WUP.x == 0.0 && WUP.y == 0.0 && WUP.x == 0.0)
+    {
+        up = Vec3D(1.0, 0.0, 0.0);
+    }
+    v = Vec3D::normalize(up - (w*((up*w)/(w*w))));
+    u = v ^ w;
+    if (pixel_qtn_h <= pixel_qtn_v) {
+        right =  u*(2.0/pixel_qtn_h);
+        iup = v*(2.0/pixel_qtn_h); 
+    } else {
+        right =  u*(2.0/pixel_qtn_v);
+        iup = v*(2.0/pixel_qtn_v); 
+    }
+}
+
+int Camera::getHr()
+{
+    return this->h_res;
+}
+
+int Camera::getVr()
+{
+    return this->v_res;
+}
+
+Point3D Camera::getPos()
+{
+    return camera_pos;
+}
+
+int Camera::getNPaths()
+{
+    return this->paths;
+}
 
 #endif

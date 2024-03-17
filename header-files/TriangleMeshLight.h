@@ -2,7 +2,7 @@
 #define __TRIANGLEMESHLIGHT__
 
 #include "RGBColor.h"
-#include "GeometricObject.h"
+#include "Object.h"
 #include "TriangleMesh.h"
 #include "Light.h"
 #include "HitInfo.h"
@@ -30,8 +30,6 @@ class TriangleMeshLight: public Light {
         bool castShadows();
         bool isExtense();
         Object* getLightModel();
-        
-        
 };
 
 void TriangleMeshLight::sampleLight(void) 

@@ -84,7 +84,7 @@ l l1 l2 l3 R G B s nt nv -0 -0 os ms ns -0 -0 -0 -0
 
 #### Camera
 ```bash
-c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional
+c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional paths
 # c: identify a camera
 # h_res: horizontal resolution
 # v_res: vertical resolution
@@ -95,6 +95,7 @@ c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional
 # p: pixel size
 # s: samples
 # optional: it could be the focal plane distance or the fish eye camera max angle (from 0 to 2PI rad)
+# paths: The number of rays shot per intersection 
 ```
 
 -----
