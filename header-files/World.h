@@ -83,62 +83,54 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
         return objectColor;
     }
     if (hInfo->hit_object) {
-        //shade hit location
-        double difuseIndice = 0, rMax = 0, gMax = 0, bMax = 0, reflectiveness = 0;
-        RGBColor resultingColor, mixedColor, specularColor;
+        double reflectiveness = 1.0 + ambient->ir;
         double distanceToIntersection = Vec3D::norma(ray.origin - hInfo->hit_location);
-        hInfo->toCamera = Vec3D::normalize(ray.origin - hInfo->hit_location);
-        // hInfo->viewerRefraction = Vec3D::normalize()
+        bool safeLight = false;
+        RGBColor resultingColor, mixedColor, specularColor;
         Point3D hitPoint = hInfo->hit_location + hInfo->normal*0.001;
-
+        Light *l;
+        
+        hInfo->toCamera = Vec3D::normalize(ray.origin - hInfo->hit_location);
         hInfo->viewerReflex = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toCamera)) - hInfo->toCamera);
-        Vec3D auxVec = hInfo->viewerReflex^hInfo->normal;
-        Vec3D auxReflex = auxVec^hInfo->viewerReflex;
-        Vec3D auxNormal = auxVec^hInfo->normal;
-        Vec3D reflexDirection = (hInfo->viewerReflex*10.0) + (auxVec*((double)std::rand()/(double)RAND_MAX)*(1.0 - kr)) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)*(1.0 - kr)) + (auxReflex*((double)std::rand()/(double)RAND_MAX)*(1.0 - kr)) + ((auxReflex*(-1.0))*((double)std::rand()/(double)RAND_MAX)*(1.0 - kr));
-        Vec3D difuseDirection = hInfo->normal + (auxVec*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd) + (auxNormal*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxNormal*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd);
-        reflectiveness = 1.0 + ambient->ir;
-        for (int l = 0; l < lights.size(); l++) {
-            if (!lights[l]->isExtense()) {
-                hInfo->toLight = lights[l]->getDirection((*hInfo));
-                // implement the attenuation of light by the distance
-                double lightDistance = Vec3D::norma(lights[l]->getPos() - hInfo->hit_location); 
-                hInfo->reflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
-                // add some flag to deactiviate shadows
-                if(lights[l]->castShadows() && getShadows)
-                {
-                    if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance)) 
-                    {
-                        mixedColor = ((lights[l]->getColor()^objectColor)*reflectiveness)/255.0;
-                        specularColor = lights[l]->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
-                        resultingColor = resultingColor + mixedColor*std::max(hInfo->normal*hInfo->toLight, 0.0) + specularColor;
-                    }
-                } else {
-                    mixedColor = ((lights[l]->getColor()^objectColor)*reflectiveness)/255.0;
-                    specularColor = lights[l]->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
-                    resultingColor = resultingColor + mixedColor*std::max(hInfo->normal*hInfo->toLight, 0.0) + specularColor;
-                }
+
+        Vec3D auxVec = Vec3D::normalize(hInfo->viewerReflex^hInfo->normal);        
+        Vec3D auxNormal = Vec3D::normalize(auxVec^hInfo->normal);
+        Vec3D difuseDirection = (hInfo->normal*((double)std::rand()/(double)RAND_MAX)) + (auxVec*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd) + (auxNormal*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxNormal*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd);
+        
+        while (!safeLight) {
+            int index = (int)rand() % lights.size();
+            if (!lights[index]->isExtense()) {
+                l = lights[index];
+                safeLight = true;
             }
         }
 
-        flatColor = ambient->color*ka + resultingColor*kd;
-        flatColor = RGBColor(std::min(flatColor.r, 255.0), std::min(flatColor.g, 255.0), std::min(flatColor.b, 255.0));
-        color = flatColor;
+        double lightDistance = Vec3D::norma(l->getPos() - hInfo->hit_location);
 
-        if (kd > 0) {
-            int divideColor = camera.getNPaths();
-            for (int i = 0; i < camera.getNPaths(); i++) {
-                Vec3D difuseDirection = hInfo->normal + (auxVec*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd) + (auxNormal*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxNormal*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd);
-                RGBColor difuseReflectionColor = trace(Ray(hitPoint, difuseDirection), objects, camera, lights, ambient, depth - 1);
-                color = (color + (difuseReflectionColor));
-            
-                
+        hInfo->toLight = l->getDirection((*hInfo));
+        hInfo->reflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
+
+        if(l->castShadows() && getShadows) {
+            if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance)) 
+            {
+                mixedColor = ((l->getColor()^objectColor)*reflectiveness)/255.0;
+                specularColor = l->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
+                resultingColor = resultingColor + mixedColor*std::max(hInfo->normal*hInfo->toLight, 0.0) + specularColor;
             }
-            color = color*(kd/(double(divideColor)));
-            // color = (color + trace(Ray(hitPoint, difuseDirection), objects, camera, lights, ambient, depth - 1))*(kd/2.0);
+        } else {
+            mixedColor = ((l->getColor()^objectColor)*reflectiveness)/255.0;
+            specularColor = l->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
+            resultingColor = resultingColor + mixedColor*std::max(hInfo->normal*hInfo->toLight, 0.0) + specularColor;
+        }
+
+        flatColor = (ambient->color*ka + resultingColor*kd)/2.0;
+        color = flatColor;
+        
+        if (kd > 0) {
+            RGBColor difuseReflectionColor = trace(Ray(hitPoint, difuseDirection), objects, camera, lights, ambient, depth - 1);
+            color = (color + difuseReflectionColor)/2.0;
         }
         if (kr > 0) {
-            hInfo->viewerReflex = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toCamera)) - hInfo->toCamera);
             color = (color + trace(Ray(hitPoint, hInfo->viewerReflex), objects, camera, lights, ambient, depth - 1))*(kr);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
@@ -159,7 +151,6 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
             color = (color + trace(Ray(hitPoint, hInfo->refraction), objects, camera, lights, ambient, depth - 1))*(kt);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
-
         return color;
     } else {
         return RGBColor(0.0, 0.0, 0.0);

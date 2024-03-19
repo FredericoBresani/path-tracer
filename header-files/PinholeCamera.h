@@ -42,7 +42,12 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
         } else {
             dir = dir + right;
         }
-        pixels.push_back(trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth));
+        RGBColor sumColor;
+        for (int t = 0; t < this->paths; t++) {
+            sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth);
+        } 
+        sumColor = sumColor/(double)this->paths;  
+        pixels.push_back(sumColor);
     }
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";

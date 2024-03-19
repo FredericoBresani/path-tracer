@@ -17,7 +17,19 @@ template <typename T> class COLOR
         COLOR<T> operator % (const COLOR<T> &v) const { return COLOR(r/v.r, g/v.g, b/v.b); } 
         COLOR<T> operator * (const T &t) const { return COLOR(r*t, g*t, b*t); }
         COLOR<T> operator / (const T &t) const { return COLOR(r/t, g/t, b/t); }
-        
+        T maxComponent()
+        {
+            T max;
+            if (r >= g) {
+                max = r;
+            } else {
+                max = g;
+            }
+            if (b >= max) {
+                max = b;
+            }
+            return max;
+        }
 
         COLOR<T> operator & (const Vec3<T> &v) const { return COLOR(r + v.x, g + v.y, b + v.z); }
         //COLOR<T> operator ! (const Vec3<T> &v) const { return COLOR(r - v.x, g - v.y, b - v.z); }
