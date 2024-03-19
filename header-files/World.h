@@ -127,8 +127,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
         color = flatColor;
         
         if (kd > 0) {
-            RGBColor difuseReflectionColor = trace(Ray(hitPoint, difuseDirection), objects, camera, lights, ambient, depth - 1);
-            color = (color + difuseReflectionColor)/2.0;
+            color = (color + trace(Ray(hitPoint, difuseDirection), objects, camera, lights, ambient, depth - 1))/2.0;
         }
         if (kr > 0) {
             color = (color + trace(Ray(hitPoint, hInfo->viewerReflex), objects, camera, lights, ambient, depth - 1))*(kr);
