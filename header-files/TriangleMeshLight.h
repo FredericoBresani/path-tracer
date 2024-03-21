@@ -30,6 +30,7 @@ class TriangleMeshLight: public Light {
         bool castShadows();
         bool isExtense();
         Object* getLightModel();
+        std::vector<Point3D> getMeshControlPoints();
 };
 
 void TriangleMeshLight::sampleLight(void) 
@@ -91,8 +92,11 @@ std::vector<Point3D> TriangleMeshLight::getLightSamples()
 {
     return this->light_samples;
 }
-
-
-
+std::vector<Point3D> TriangleMeshLight::getMeshControlPoints()
+{
+    std::vector<Point3D> vertices = this->light_model->vertices;
+    std::vector<Point3I> triangles = this->light_model->triangles;
+    return {vertices[triangles[0].x], vertices[triangles[0].y], vertices[triangles[0].z]};
+}
 
 #endif

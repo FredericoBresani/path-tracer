@@ -29,7 +29,7 @@ class PinholeCamera: public Camera {
 
 void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& lights, Ambient& ambient)
 {
-    Vec3D toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0);/* - (camera.iup/2.0) + (camera.right/2.0)*/ //while using anti-aliasing there is no need to be in the center of the pixel
+    Vec3D toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
     Vec3D dir;
     std::vector<RGBColor> pixels;

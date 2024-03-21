@@ -28,6 +28,7 @@ class PointLight: public Light {
         bool isExtense();
         void sampleLight();
         Object* getLightModel();
+        std::vector<Point3D> getMeshControlPoints();
         
 };
 
@@ -74,6 +75,11 @@ Object* PointLight::getLightModel()
 std::vector<Point3D> PointLight::getLightSamples()
 {
     return this->light_samples;
+}
+
+std::vector<Point3D> PointLight::getMeshControlPoints()
+{
+    return {Point3D()};
 }
 
 

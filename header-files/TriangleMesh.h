@@ -36,6 +36,7 @@ class TriangleMesh: public Object {
         bool getShadows();
         bool getCastShadows();
         std::vector<Point3D> sampleObject();
+        char getObjectType();
 };
 
 bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info) 
@@ -153,6 +154,10 @@ std::vector<Point3D> TriangleMesh::sampleObject()
 {
     std::vector<Point3D> samples = {Point3D()};
     return samples;
+}
+char TriangleMesh::getObjectType()
+{
+    return 't';
 }
 
 

@@ -30,7 +30,7 @@ class Object {
         virtual bool getShadows() = 0;
         virtual bool getCastShadows() = 0;
         virtual std::vector<Point3D> sampleObject() = 0;
-
+        virtual char getObjectType() = 0;
 };
 
 #endif

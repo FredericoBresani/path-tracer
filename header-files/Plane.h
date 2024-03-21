@@ -33,6 +33,7 @@ class Plane: public Object
         bool getShadows();
         bool getCastShadows();
         std::vector<Point3D> sampleObject();
+        char getObjectType();
 };
 
 bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo& info)
@@ -98,6 +99,10 @@ std::vector<Point3D> Plane::sampleObject()
 {
     std::vector<Point3D> samples = {Point3D()};
     return samples;
+}
+char Plane::getObjectType()
+{
+    return 'p';
 }
 
 #endif
