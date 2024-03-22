@@ -29,6 +29,7 @@ class PointLight: public Light {
         void sampleLight();
         Object* getLightModel();
         std::vector<Point3D> getMeshControlPoints();
+        void setColor(RGBColor &c);
         
 };
 
@@ -80,6 +81,11 @@ std::vector<Point3D> PointLight::getLightSamples()
 std::vector<Point3D> PointLight::getMeshControlPoints()
 {
     return {Point3D()};
+}
+
+void PointLight::setColor(RGBColor &c)
+{
+    this->lightColor = c;
 }
 
 

@@ -33,6 +33,20 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
     Vec3D down;
     Vec3D dir;
     std::vector<RGBColor> pixels;
+    Vec3D lightX, lightNormal, lightZ;
+    for (int j = 0; j < lights.size(); j++) {  
+        if (lights[j]->isExtense() && lights[j]->getLightModel()->getObjectType() == 't') {
+            Point3D A, B, C;
+            std::vector<Point3D> vertices = lights[j]->getMeshControlPoints();
+            A = vertices[0];
+            B = vertices[1];
+            C = vertices[2];
+            lightX = Vec3D::normalize(B - A);
+            lightNormal = Vec3D::normalize((B - A) ^ (C - A));
+            lightZ = Vec3D::normalize(lightX ^ lightNormal);
+            j = lights.size();
+        }
+    }
     for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++)
     {
         if ((i) % (int)pixel_qtn_h == 0)
@@ -42,9 +56,10 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
         } else {
             dir = dir + right;
         }
+        
         RGBColor sumColor;
         for (int t = 0; t < this->paths; t++) {
-            sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth);
+            sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth, lightX, lightNormal, lightZ);
         } 
         sumColor = sumColor/(double)this->paths;  
         pixels.push_back(sumColor);

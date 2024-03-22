@@ -18,6 +18,7 @@ class Light
         virtual Vec3D getDirection(HitInfo &info) = 0;
         virtual Point3D getPos() = 0;
         virtual std::vector<Point3D> getMeshControlPoints() = 0;
+        virtual void setColor(RGBColor &color) = 0;
     protected:
         bool shadows;
         std::vector<Point3D> light_samples;
