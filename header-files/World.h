@@ -222,14 +222,14 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
         std::vector<std::vector<Light*>> lightPaths;
 
         Light *copyL = new PointLight(l->getPos(), l->getColor(), 1, 0);
-        for (int i = 0; i < camera.getNPaths(); i++) {
+        for (int i = 0; i < 1; i++) {
             std::vector<Light*> path;
             Vec3D randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
             path.push_back(new PointLight(l->getPos(), copyL->getColor(), 1, 0));
             traceLight(Ray(l->getPos(), randomLightDirection), objects, *copyL, ambient, ambient->depth - 1, &path);
             lightPaths.push_back(path);
         }
-
+        
         int successfulPaths = 0;
         bool pathFound = false;
         for (int i = 0; i < lightPaths.size(); i++) {
@@ -249,7 +249,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
         }
 
         if (pathFound) {
-            resultingColor = resultingColor/(double)lightPaths.size();
+            resultingColor = resultingColor/(double)successfulPaths;
         }
 
         flatColor = (ambient->color*ka + resultingColor*kd)/2.0;
