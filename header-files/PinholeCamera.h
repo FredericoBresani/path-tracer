@@ -57,6 +57,10 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
             dir = dir + right;
         }
 
+        if (i == (pixel_qtn_h*pixel_qtn_v/2) - 125) {
+            int asuidh = 0;
+        }
+
         RGBColor sumColor;
         for (int t = 0; t < this->paths; t++) {
             sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth, lightX, lightNormal, lightZ);

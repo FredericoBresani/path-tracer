@@ -219,31 +219,29 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
             }
         }
 
-        std::vector<std::vector<Light*>> lightPaths;
+        std::vector<Light*> lightPath;
 
         Light *copyL = new PointLight(l->getPos(), l->getColor(), 1, 0);
-        for (int i = 0; i < 1; i++) {
-            std::vector<Light*> path;
-            Vec3D randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
-            path.push_back(new PointLight(l->getPos(), copyL->getColor(), 1, 0));
-            traceLight(Ray(l->getPos(), randomLightDirection), objects, *copyL, ambient, ambient->depth - 1, &path);
-            lightPaths.push_back(path);
-        }
+        Vec3D randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
+        lightPath.push_back(new PointLight(l->getPos(), copyL->getColor(), 1, 0));
+        traceLight(Ray(l->getPos(), randomLightDirection), objects, *copyL, ambient, ambient->depth, &lightPath);
         
         int successfulPaths = 0;
         bool pathFound = false;
-        for (int i = 0; i < lightPaths.size(); i++) {
-            for (int j = lightPaths[i].size() - 1; j >= 0; j--) {
-                double lightDistance = Vec3D::norma(lightPaths[i][j]->getPos() - hInfo->hit_location);
-                hInfo->toLight = lightPaths[i][j]->getDirection((*hInfo));
-                if(lightPaths[i][j]->castShadows() && getShadows) {
-                    if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
-                    { 
+        for (int i = 0; i < lightPath.size(); i++) {
+            RGBColor theColor = lightPath[i]->getColor();
+            Point3D whereIsTheLight = lightPath[i]->getPos();
+            double lightDistance = Vec3D::norma(lightPath[i]->getPos() - hInfo->hit_location);
+            hInfo->toLight = Vec3D::normalize(lightPath[i]->getDirection((*hInfo)));
+            if(lightPath[i]->castShadows() && getShadows) {
+                if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
+                { 
+                    mixedColor = (((lightPath[i]->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
+                    if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
                         pathFound = true;
-                        mixedColor = ((lightPaths[i][j]->getColor()^objectColor)*reflectiveness)/255.0;
-                        resultingColor = resultingColor + mixedColor*std::max(hInfo->normal*hInfo->toLight, 0.0); 
-                        successfulPaths++;                   
-                    }
+                        resultingColor = resultingColor + mixedColor; 
+                        successfulPaths++;
+                    }               
                 }
             }
         }
