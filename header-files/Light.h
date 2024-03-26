@@ -5,6 +5,7 @@
 #include <vector>
 #include "RGBColor.h"
 #include "Object.h"
+#include "Vectors.h"
 
 class Light
 {
@@ -19,6 +20,8 @@ class Light
         virtual Point3D getPos() = 0;
         virtual std::vector<Point3D> getMeshControlPoints() = 0;
         virtual void setColor(RGBColor &color) = 0;
+        virtual bool isDirectional() = 0;
+        virtual Vec3D getDirectionalVec() = 0;
     protected:
         bool shadows;
         std::vector<Point3D> light_samples;

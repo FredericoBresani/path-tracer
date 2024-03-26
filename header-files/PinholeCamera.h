@@ -58,9 +58,6 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
             dir = dir + right;
         }
 
-        if (i == (pixel_qtn_h*pixel_qtn_v/2) - 125) {
-            int asuidh = 0;
-        }
         std::vector<Light*> lightPath = {};
         RGBColor sumColor;
         double energy = 0;

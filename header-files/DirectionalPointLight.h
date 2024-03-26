@@ -1,5 +1,5 @@
-#ifndef __POINTLIGHT__
-#define __POINTLIGHT__
+#ifndef __DIRECTIONALPOINTLIGHT__
+#define __DIRECTIONALPOINTLIGHT__
 
 #include "Light.h"
 #include "Points.h"
@@ -9,18 +9,21 @@
 #include "Vectors.h"
 
 
-class PointLight: public Light {
+class DirectionalPointLight: public Light {
     public:
-        PointLight(const Point3D& pos, const RGBColor& color, bool s, int n): lightPos(pos), lightColor(color) {
+        DirectionalPointLight(const Point3D& pos, const RGBColor& color, bool s, int n, Vec3D directional): 
+            lightPos(pos), lightColor(color), directionalVec(directional) 
+        {
             this->shadows = s;
             this->n_samples = n;
         }
-        ~PointLight() {}
+        ~DirectionalPointLight() {}
         std::vector<Point3D> getLightSamples();
         
     private:
         Point3D lightPos;
         RGBColor lightColor;
+        Vec3D directionalVec;
         Vec3D getDirection(HitInfo &hit);
         RGBColor incidentRadiance(HitInfo &hit);
         Point3D getPos();
@@ -36,67 +39,67 @@ class PointLight: public Light {
         
 };
 
-Vec3D PointLight::getDirection(HitInfo &hit)
+Vec3D DirectionalPointLight::getDirection(HitInfo &hit)
 {
     return Vec3D::normalize(this->lightPos - hit.hit_location);
 }
 
-RGBColor PointLight::incidentRadiance(HitInfo &hit)
+RGBColor DirectionalPointLight::incidentRadiance(HitInfo &hit)
 {
     return lightColor;
 }
 
-Point3D PointLight::getPos()
+Point3D DirectionalPointLight::getPos()
 {
     return this->lightPos;
 }
 
-RGBColor PointLight::getColor()
+RGBColor DirectionalPointLight::getColor()
 {
     return this->lightColor;
 }
 
-bool PointLight::castShadows()
+bool DirectionalPointLight::castShadows()
 {
     return this->shadows;
 }
 
-bool PointLight::isExtense()
+bool DirectionalPointLight::isExtense()
 {
     return false;
 }
 
-void PointLight::sampleLight()
+void DirectionalPointLight::sampleLight()
 {
     this->light_samples.push_back(this->lightPos);
 }
 
-Object* PointLight::getLightModel()
+Object* DirectionalPointLight::getLightModel()
 {
     return nullptr;
 }
 
-std::vector<Point3D> PointLight::getLightSamples()
+std::vector<Point3D> DirectionalPointLight::getLightSamples()
 {
     return this->light_samples;
 }
 
-std::vector<Point3D> PointLight::getMeshControlPoints()
+std::vector<Point3D> DirectionalPointLight::getMeshControlPoints()
 {
     return {Point3D()};
 }
 
-void PointLight::setColor(RGBColor &c)
+void DirectionalPointLight::setColor(RGBColor &c)
 {
     this->lightColor = c;
 }
 
-bool PointLight::isDirectional()
+bool DirectionalPointLight::isDirectional()
 {
-    return false;
+    return true;
 }
 
-Vec3D PointLight::getDirectionalVec()
+Vec3D DirectionalPointLight::getDirectionalVec()
 {
     return Vec3D();
 }

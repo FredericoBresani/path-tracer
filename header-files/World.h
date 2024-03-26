@@ -12,6 +12,7 @@
 #include <math.h>
 #include "PointLight.h"
 #include "TriangleMesh.h"
+#include "DirectionalPointLight.h"
 
 bool inShadow(Ray ray, std::vector<Object*> &objects, float lightDistance, HitInfo &info)
 {
@@ -112,7 +113,7 @@ void traceLight(const Ray &ray, std::vector<Object*> &objects, Light &light, Amb
         if (kr > 0) {
             RGBColor r = newLightColor*kr;
             light.setColor(r);
-            path->push_back(new PointLight(hInfo->hit_location, color*kr, 1, 0));
+            path->push_back(new DirectionalPointLight(hInfo->hit_location, color*kr, 1, 0, hInfo->viewerReflex));
             traceLight(Ray(hitPoint, hInfo->viewerReflex), objects, light, ambient, depth - 1, path);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
@@ -128,12 +129,12 @@ void traceLight(const Ray &ray, std::vector<Object*> &objects, Light &light, Amb
             }
             double temp = 1.0 - ((1.0 - cos*cos) / (eta*eta));
             double cos2 = sqrt(temp);
-            hInfo->refraction = hInfo->toCamera*(-1)/eta - (hInfo->normal*(cos2 - cos/eta));
+            hInfo->refraction = Vec3D::normalize(hInfo->toCamera*(-1)/eta - (hInfo->normal*(cos2 - cos/eta)));
             hitPoint = hitPoint + hInfo->refraction*0.015;
 
             RGBColor r = newLightColor*kt;
             light.setColor(r);
-            path->push_back(new PointLight(hitPoint, newLightColor*kt, 1, 0));
+            path->push_back(new DirectionalPointLight(hitPoint, newLightColor*kt, 1, 0, hInfo->refraction));
             traceLight(Ray(hitPoint, hInfo->refraction), objects, light, ambient, depth - 1, path);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
@@ -236,12 +237,18 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
             if(lightPath[i]->castShadows() && getShadows) {
                 if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
                 { 
+                    
                     mixedColor = (((lightPath[i]->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                     if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
                         pathFound = true;
                         resultingColor = resultingColor + mixedColor; 
                         successfulPaths++;
-                    }               
+                    }  
+                             
+                } else {
+                    if (hInfo->transparent) {
+                       resultingColor = resultingColor + trace(Ray(hInfo->hit_location, hInfo->toLight), objects, camera, lights, ambient, depth - 1, lightX, lightNormal, lightZ, goodPath, energy);
+                    }
                 }
             }
         }
@@ -266,12 +273,18 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
                 if((*goodPath)[i]->castShadows() && getShadows) {
                     if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
                     { 
+        
                         mixedColor = ((((*goodPath)[i]->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                         if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
                             pathFound = true;
                             resultingColor = resultingColor + mixedColor; 
                             successfulPaths++;
-                        }               
+                        }
+                                       
+                    } else {
+                        if (hInfo->transparent) {
+                            resultingColor = resultingColor + trace(Ray(hInfo->hit_location, hInfo->toLight), objects, camera, lights, ambient, depth - 1, lightX, lightNormal, lightZ, goodPath, energy);
+                        }
                     }
                 }
             }
