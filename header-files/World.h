@@ -248,13 +248,14 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
 
         if (pathFound) {
             resultingColor = resultingColor/(double)successfulPaths;
-            if (resultingColor.r + resultingColor.g + resultingColor.b > 80) {
+            if (resultingColor.r + resultingColor.g + resultingColor.b > 70) {
                 (*energy) = resultingColor.r + resultingColor.g + resultingColor.b;
                 (*goodPath) = lightPath;
             }
         }
 
         if (goodPath->size() > 0 && (*energy) > (resultingColor.r + resultingColor.g + resultingColor.b)) {
+            resultingColor = RGBColor();
             successfulPaths = 0;
             pathFound = false;
             for (int i = 0; i < goodPath->size(); i++) {
@@ -274,6 +275,10 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
                     }
                 }
             }
+        }
+
+        if (pathFound) {
+            resultingColor = resultingColor/(double)successfulPaths;
         }
 
         flatColor = (ambient->color*ka + resultingColor*kd)/2.0;
