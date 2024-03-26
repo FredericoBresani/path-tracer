@@ -8,6 +8,7 @@
 #include "Points.h"
 #include "Vectors.h"
 #include <iostream>
+#include "Light.h"
 
 
 class PinholeCamera: public Camera {
@@ -60,10 +61,11 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
         if (i == (pixel_qtn_h*pixel_qtn_v/2) - 125) {
             int asuidh = 0;
         }
-
+        std::vector<Light*> lightPath = {};
         RGBColor sumColor;
+        double energy = 0;
         for (int t = 0; t < this->paths; t++) {
-            sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth, lightX, lightNormal, lightZ);
+            sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth, lightX, lightNormal, lightZ, &lightPath, &energy);
         } 
         sumColor = sumColor/(double)this->paths;  
         pixels.push_back(sumColor);
