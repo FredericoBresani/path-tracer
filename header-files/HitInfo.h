@@ -11,6 +11,7 @@ class HitInfo {
     public:
         bool hit_object = false;
         bool hit_light = false;
+        bool transparent, reflexive;
         Point3D hit_location;
         Vec3D normal, toLight, toCamera, reflection, refraction, viewerReflex; 
         Material *material_pointer;

@@ -11,19 +11,30 @@
 #include <stdlib.h>
 #include <math.h>
 
-bool inShadow(Ray ray, std::vector<Object*> &objects, float lightDistance)
+bool inShadow(Ray ray, std::vector<Object*> &objects, float lightDistance, HitInfo &info)
 {
-    double t = infinity;
+    double t = infinity, tmin = infinity;
     HitInfo *shadowHit = new HitInfo();
     for (int i = 0; i < objects.size(); i++)
     {
-    
-            if (objects[i]->getCastShadows() && objects[i]->rayObjectIntersect(ray, &t, *shadowHit)) {
-                if (t < lightDistance) {
-                    return true;
+        if (objects[i]->getCastShadows() && objects[i]->rayObjectIntersect(ray, &t, *shadowHit)) {
+            if (t < tmin) {
+                tmin = t;
+                if (objects[i]->getKr() > 0) {
+                    info.reflexive = true;
+                } else {
+                    info.reflexive = false;
+                }
+                if (objects[i]->getKt() > 0) {
+                    info.transparent = true;
+                } else {
+                    info.transparent = false;
                 }
             }
-        
+        }
+    }
+    if (tmin < lightDistance) {
+        return true;
     }
     return false;
 }
@@ -111,11 +122,15 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
         hInfo->reflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
 
         if(l->castShadows() && getShadows) {
-            if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance)) 
+            if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo)) 
             {
                 mixedColor = ((l->getColor()^objectColor)*reflectiveness)/255.0;
                 specularColor = l->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
                 resultingColor = resultingColor + mixedColor*std::max(hInfo->normal*hInfo->toLight, 0.0) + specularColor;
+            } else {
+                if (hInfo->transparent) {
+                    resultingColor = resultingColor + trace(Ray(hitPoint, hInfo->toLight), objects, camera, lights, ambient, depth - 1);
+                }
             }
         } else {
             mixedColor = ((l->getColor()^objectColor)*reflectiveness)/255.0;
