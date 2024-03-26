@@ -242,6 +242,10 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
                         resultingColor = resultingColor + mixedColor; 
                         successfulPaths++;
                     }               
+                } else {
+                    if (hInfo->transparent) {
+                        resultingColor = resultingColor + trace(Ray(hInfo->hit_location, hInfo->toLight), objects, camera, lights, ambient, depth - 1, lightX, lightNormal, lightZ);
+                    }
                 }
             }
         }
