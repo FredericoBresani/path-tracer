@@ -1,3 +1,43 @@
+# Path tracer
+Here a show some results rendered in a 300x300 resolution with 5 to 7 depth of recursion.
+Using 30 paths per pixel.
+I will compare a comom path tracer, a simple implementation of a bidirectional path tracer and a simple implemetentio of the Metropolis light transport.
+
+### Results
+
+#### Cornell box - Common Path tracer
+![Cornell box](presets/cornell-box-30-samples-caustics.png)
+- A cornell box with caustics on;
+
+#### Edge case Cornell box - Common Path tracer
+![Edge case Cornell box](presets/edge-case-30-samples-caustics.png)
+- A cornell box with a plane blocking the direct illumination of the light;
+- Caustics on;
+
+-----
+
+#### Cornell box - Bidirectional path tracer
+![Cornell box](cornell-box-30-samples-caustics-bidirectional.png)
+- A cornell box with caustics on;
+
+#### Edge case Cornell box - Bidirectional path tracer
+![Edge case Cornell box](edge-case-30-samples-caustics-bidirectional.png)
+- A cornell box with a plane blocking the direct illumination of the light;
+- Caustics on;
+
+-----
+
+#### Cornell box - Metropolis light transport
+![Cornell box](cornell-box-30-samples-caustics-metropolis.png)
+- A cornell box with caustics on;
+- Using 1 to 30 permutations by path;
+
+#### Edge case Cornell box - Metropolis light transport
+![Edge case Cornell box](edge-case-30-samples-caustics-metropolis.png)
+- A cornell box with a plane blocking the direct illumination of the light;
+- Caustics on;
+- Using 1 to 30 permutations by path;
+
 ### input format
 #### Spheres
 ```bash
