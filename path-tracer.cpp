@@ -114,7 +114,7 @@ int main() {
             } 
             case 'a':
             {
-                ambient = new Ambient(RGBColor(_1, _2, _3), _4, _5);
+                ambient = new Ambient(RGBColor(_1, _2, _3), _4, _5, _6);
                 break;
             }
             default:
@@ -126,13 +126,13 @@ int main() {
     }
 
     auto start = std::chrono::high_resolution_clock::now();
-
+    
     render(objects, lights, *camera, *ambient);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
 
-    std::cout << "Time elapsed: " << duration.count() << std::endl;
+    std::cout << "Time elapsed: " << duration.count() << "s" << std::endl;
 
     return 0;
 }

@@ -8,8 +8,8 @@ class Ambient {
     public:
         RGBColor color;
         float ir;
-        int depth = 1;
-        Ambient(RGBColor c, float i, int d): color(c), ir(i), depth(d) {}
+        int depth = 1, nThreds;
+        Ambient(RGBColor c, float i, int d, int nT): color(c), ir(i), depth(d), nThreds(nT) {}
         ~Ambient() {}
     
 };

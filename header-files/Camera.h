@@ -13,6 +13,9 @@ class Camera {
         int getHr();
         int getVr();
         int getNPaths();
+        Vec3D getIUP();
+        Vec3D getRight();
+        int getPixelsH();
         virtual void render(std::vector<Object*> objects, std::vector<Light*> &lights, Ambient &ambient) = 0;
         
         
@@ -65,6 +68,21 @@ Point3D Camera::getPos()
 int Camera::getNPaths()
 {
     return this->paths;
+}
+
+Vec3D Camera::getIUP() 
+{
+    return this->iup;
+}
+
+Vec3D Camera::getRight()
+{
+    return this->right;
+}
+
+int Camera::getPixelsH()
+{
+    return this->pixel_qtn_h;
 }
 
 #endif

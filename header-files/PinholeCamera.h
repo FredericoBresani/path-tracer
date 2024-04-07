@@ -9,6 +9,7 @@
 #include "Vectors.h"
 #include <iostream>
 #include "Light.h"
+#include "ScreenThread.h"
 
 
 class PinholeCamera: public Camera {
@@ -33,7 +34,7 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
     Vec3D toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
     Vec3D dir;
-    std::vector<RGBColor> pixels(pixel_qtn_h*pixel_qtn_v, 0);
+    std::vector<RGBColor> pixels(pixel_qtn_h*pixel_qtn_v, RGBColor());
     Vec3D lightX, lightNormal, lightZ;
     for (int j = 0; j < lights.size(); j++) {  
         if (lights[j]->isExtense() && lights[j]->getLightModel()->getObjectType() == 't') {
@@ -48,26 +49,49 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
             j = lights.size();
         }
     }
-    
-    for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++)
-    {
-        if ((i) % (int)pixel_qtn_h == 0)
-        {
-            down = down - iup;
-            dir = toPixel + down;
+    int threadRange = ceil((double)pixel_qtn_h*pixel_qtn_v/(double)ambient.nThreds);
+    int start = 0, end = threadRange;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < ambient.nThreds && start <= pixel_qtn_h*pixel_qtn_v - 1; i++) {
+        if (end > pixel_qtn_h*pixel_qtn_v - 1) {
+            threads.push_back(
+                std::thread(
+                    ScreenThread(i, start, pixel_qtn_h*pixel_qtn_v), 
+                    std::ref(pixels), 
+                    std::ref(toPixel),
+                    std::ref(objetos),
+                    std::ref((*this)),
+                    std::ref(lights),
+                    std::ref(ambient),
+                    std::ref(lightX),
+                    std::ref(lightNormal),
+                    std::ref(lightZ)
+                   
+                )
+            );
         } else {
-            dir = dir + right;
+            threads.push_back(
+                std::thread(
+                    ScreenThread(i, start, end), 
+                    std::ref(pixels), 
+                    std::ref(toPixel),
+                    std::ref(objetos),
+                    std::ref((*this)),
+                    std::ref(lights),
+                    std::ref(ambient),
+                    std::ref(lightX),
+                    std::ref(lightNormal),
+                    std::ref(lightZ)
+                )
+            );
         }
-
-        std::vector<Light*> lightPath = {};
-        RGBColor sumColor;
-        double energy = 0;
-        for (int t = 0; t < this->paths; t++) {
-            sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth, lightX, lightNormal, lightZ, &lightPath, &energy);
-        } 
-        sumColor = sumColor/(double)this->paths;  
-        pixels[i] = sumColor;
+        start += threadRange;
+        end += threadRange;
     }
+    for (int i = 0; i < threads.size(); i++) {
+        threads[i].join();
+    }
+    
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";
     for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++)
