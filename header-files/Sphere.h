@@ -35,6 +35,7 @@ class Sphere: public Object
         bool getShadows();
         bool getCastShadows();
         std::vector<Point3D> sampleObject();
+        char getObjectType();
 };
 
 bool Sphere::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo& info)
@@ -124,6 +125,10 @@ std::vector<Point3D> Sphere::sampleObject()
 {
     std::vector<Point3D> samples = {Point3D()};
     return samples;
+}
+char Sphere::getObjectType()
+{
+    return 's';
 }
 
 #endif

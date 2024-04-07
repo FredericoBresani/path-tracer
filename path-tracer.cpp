@@ -24,7 +24,9 @@
 #include "./header-files/World.h"
 
 void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &camera, Ambient &ambient)
-{
+{   // Para cada sample da luz gerar alguns caminhos sample
+    // Gerar caminhos sample nada mais é do que atirar rais a partir da luz que resultarão num ponto associado a uma cor
+    // 
     camera.render(objects, lights, ambient);
 }
 
