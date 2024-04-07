@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <math.h>
+#include <chrono>
 
 #include "./header-files/Ambient.h"
 #include "./header-files/Camera.h"
@@ -123,6 +124,15 @@ int main() {
             }
         }
     }
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     render(objects, lights, *camera, *ambient);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+
+    std::cout << "Time elapsed: " << duration.count() << std::endl;
+
     return 0;
 }

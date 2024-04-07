@@ -33,7 +33,7 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
     Vec3D toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
     Vec3D dir;
-    std::vector<RGBColor> pixels;
+    std::vector<RGBColor> pixels(pixel_qtn_h*pixel_qtn_v, 0);
     Vec3D lightX, lightNormal, lightZ;
     for (int j = 0; j < lights.size(); j++) {  
         if (lights[j]->isExtense() && lights[j]->getLightModel()->getObjectType() == 't') {
@@ -48,6 +48,7 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
             j = lights.size();
         }
     }
+    
     for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++)
     {
         if ((i) % (int)pixel_qtn_h == 0)
@@ -65,7 +66,7 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
             sumColor = sumColor + trace(Ray(camera_pos, dir), objetos, (*this), lights, &ambient, ambient.depth, lightX, lightNormal, lightZ, &lightPath, &energy);
         } 
         sumColor = sumColor/(double)this->paths;  
-        pixels.push_back(sumColor);
+        pixels[i] = sumColor;
     }
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";
