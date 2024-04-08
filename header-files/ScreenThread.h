@@ -39,9 +39,9 @@ class ScreenThread {
                 for (int j = 0; j < camera.getNPaths(); j++) {
                     sumColor = sumColor + trace(Ray(camera.getPos(), dir), objetos, camera, lights, &ambient, ambient.depth, lightX, lightNormal, lightZ, j);
                 }
-            
-                sumColor = sumColor/(double)camera.getNPaths();
+                
                 lock.lock();
+                sumColor = sumColor/(double)camera.getNPaths();
                 pixels[i] = sumColor;
                 lock.unlock();
             }

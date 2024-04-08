@@ -10,6 +10,7 @@
 #include <iostream>
 #include "Light.h"
 #include "ScreenThread.h"
+#include <fstream>
 
 
 class PinholeCamera: public Camera {
@@ -92,6 +93,11 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
         threads[i].join();
     }
     
+    std::ofstream MyFile ("output.txt");
+    for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++) {
+        MyFile << "RGBColor(" << pixels[i].r << ", " << pixels[i].g << ", " << pixels[i].b << ");\n";
+    }
+    MyFile.close();
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";
     for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++)
