@@ -226,7 +226,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, Camera camera, std:
                 safeLight = true;
             }
         }
-        /*----------------------------------------------------------------*/
+        
         std::vector<Light*> lightPath;
 
         Light *copyL = new PointLight(l->getPos(), l->getColor(), 1, 0);
@@ -299,23 +299,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, Camera camera, std:
 
         if (pathFound) {
             resultingColor = resultingColor/(double)successfulPaths;
-        }/*----------------------------------------------------------------------------*/
-        /*---------------------------------------------------------------------------------------------------
-        hInfo->toLight = Vec3D::normalize(l->getPos() - hInfo->hit_location);
-        double lightDistance = Vec3D::norma(l->getPos() - hInfo->hit_location);
-        if(l->castShadows() && getShadows) {
-            if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
-            { 
-                
-                mixedColor = (((l->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
-                resultingColor = resultingColor + mixedColor;         
-            } else {
-                if (hInfo->transparent) {
-                    resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, camera, lights, ambient, depth - 1, lightX, lightNormal, lightZ, step))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
-                }
-            }
         }
-        //-----------------------------------------------------------------------------------------------------*/
 
         flatColor = (ambient.color*ka + resultingColor*kd)/2.0;
         color = flatColor;

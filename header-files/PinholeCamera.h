@@ -97,6 +97,7 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*> lig
     for (int i = 0; i < threads.size(); i++) {
         threads[i].join();
     }
+    std::cout << " [==============================] 100% \n";
     /* testing inconsitency
     std::ofstream MyFile ("output.txt");
     for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++) {

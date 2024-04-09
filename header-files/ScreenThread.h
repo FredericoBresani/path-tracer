@@ -4,6 +4,8 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <string>
+#include <iostream>
 
 #include "RGBColor.h"
 #include "Light.h"
@@ -19,7 +21,7 @@
 
 class ScreenThread {
     public:
-        int id, minIndex, maxIndex;
+        int id, minIndex, maxIndex, barLength = 30;
         RGBColor copySumColor;
         Screen *screen;
 
@@ -49,14 +51,19 @@ class ScreenThread {
                 screen->pixels[i] = sumColor;
                 screen->checkPixel();
                 float progress = (float)screen->getDonePixelsQtn()/(float)screen->getPixelQtn();
-                std::cout << (int)(progress * 100) << "%\r";
+                int bars = (int)(((float)this->barLength)*progress);
+                std::string bar = "";
+                for (int t = 0; t < bars; t++) {
+                    bar += "=";
+                }
+                for (int t = bars; t < this->barLength; t++) {
+                    bar += " ";
+                }
+                std::cout << " [" << bar << "] " << (int)(progress*100) << "%\r";
                 std::cout.flush();
                 lock.unlock();
-            }
-            std::cout << "Thread-" << this->id << " finished rendering!" << "\n"; 
+            } 
         }
 };
-
-
 
 #endif
