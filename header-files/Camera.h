@@ -16,7 +16,7 @@ class Camera {
         Vec3D getIUP();
         Vec3D getRight();
         int getPixelsH();
-        virtual void render(std::vector<Object*> objects, std::vector<Light*> &lights, Ambient &ambient) = 0;
+        virtual void render(std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient);
         
         
     protected:
@@ -26,6 +26,8 @@ class Camera {
         Point3D camera_pos, look_at;
 
 };
+
+void Camera::render(std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient) {}
 
 void Camera::makeCamera()
 {

@@ -11,7 +11,12 @@
 #include "Light.h"
 #include "ScreenThread.h"
 #include <fstream>
+#include "Screen.h"
+#include <mutex>
 
+
+Screen *screen = new Screen();
+std::mutex lock;
 
 class PinholeCamera: public Camera {
     public:
@@ -27,15 +32,15 @@ class PinholeCamera: public Camera {
             paths = pths;
         }
         ~PinholeCamera() {}
-        void render(std::vector<Object*> objetos, std::vector<Light*>& lights, Ambient& ambient);
+        void render(std::vector<Object*> objetos, std::vector<Light*> lights, Ambient ambient);
 };
 
-void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& lights, Ambient& ambient)
+void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*> lights, Ambient ambient)
 {
     Vec3D toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
     Vec3D dir;
-    std::vector<RGBColor> pixels(pixel_qtn_h*pixel_qtn_v, RGBColor());
+    screen->setPixelQtn(pixel_qtn_h*pixel_qtn_v);
     Vec3D lightX, lightNormal, lightZ;
     for (int j = 0; j < lights.size(); j++) {  
         if (lights[j]->isExtense() && lights[j]->getLightModel()->getObjectType() == 't') {
@@ -57,8 +62,8 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
         if (end > pixel_qtn_h*pixel_qtn_v - 1) {
             threads.push_back(
                 std::thread(
-                    ScreenThread(i, start, pixel_qtn_h*pixel_qtn_v), 
-                    std::ref(pixels), 
+                    ScreenThread(i, start, pixel_qtn_h*pixel_qtn_v, screen),
+                    std::ref(lock), 
                     std::ref(toPixel),
                     std::ref(objetos),
                     std::ref((*this)),
@@ -73,8 +78,8 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
         } else {
             threads.push_back(
                 std::thread(
-                    ScreenThread(i, start, end), 
-                    std::ref(pixels), 
+                    ScreenThread(i, start, end, screen), 
+                    std::ref(lock), 
                     std::ref(toPixel),
                     std::ref(objetos),
                     std::ref((*this)),
@@ -92,19 +97,20 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*>& li
     for (int i = 0; i < threads.size(); i++) {
         threads[i].join();
     }
-    
+    /* testing inconsitency
     std::ofstream MyFile ("output.txt");
     for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++) {
         MyFile << "RGBColor(" << pixels[i].r << ", " << pixels[i].g << ", " << pixels[i].b << ");\n";
     }
     MyFile.close();
+    */
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";
     for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++)
     {
-        pixelOutput <<(unsigned char)(std::max(double(1), pixels[i].r)) <<
-            (unsigned char)(std::max(double(1), pixels[i].g)) <<
-            (unsigned char)(std::max(double(1), pixels[i].b));
+        pixelOutput <<(unsigned char)(std::max(double(1), screen->pixels[i].r)) <<
+            (unsigned char)(std::max(double(1), screen->pixels[i].g)) <<
+            (unsigned char)(std::max(double(1), screen->pixels[i].b));
     }
     pixelOutput.close();
 }
