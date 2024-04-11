@@ -3,7 +3,6 @@
 
 #include "RGBColor.h"
 
-
 class Material 
 {
     public:

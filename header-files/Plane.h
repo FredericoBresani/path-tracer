@@ -2,12 +2,7 @@
 #define __PLANE__
 
 #include "Object.h"
-#include "Points.h"
-#include "Vectors.h"
 #include "Definitions.h"
-#include "RGBColor.h"
-#include "Material.h"
-#include <vector>
 
 
 class Plane: public Object 
@@ -15,9 +10,11 @@ class Plane: public Object
     public:
         Vec3D normal;
         Point3D pp;
-        Material *material;
+        std::shared_ptr<Material> material;
         bool castShadows;
-        Plane(const Vec3D &n, const Point3D &p, Material *m, bool s): normal(n), pp(p), material(m), castShadows(s) {}
+        Plane(const Vec3D &n, const Point3D &p, Material *m, bool s): normal(n), pp(p), castShadows(s) {
+            this->material = std::make_shared<Material>((*m));
+        }
         ~Plane() {}
         bool rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info);
     private:

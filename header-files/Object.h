@@ -1,19 +1,17 @@
 #ifndef __OBJECT__
 #define __OBJECT__
 
-#include "Points.h"
-#include "RGBColor.h"
-#include "Vectors.h"
-#include "Material.h"
+
 #include "Ray.h"
+#include "Material.h"
 #include "HitInfo.h"
 #include <vector>
-#include <stdlib.h>
+#include <memory>
 
 
 class Object {
     public:
-        Material *material;
+        std::shared_ptr<Material> material;
         bool castShadows;
         Object() {}
         virtual ~Object() {}

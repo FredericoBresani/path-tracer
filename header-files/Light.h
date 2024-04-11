@@ -3,9 +3,7 @@
 
 #include "Points.h"
 #include <vector>
-#include "RGBColor.h"
 #include "Object.h"
-#include "Vectors.h"
 
 class Light
 {

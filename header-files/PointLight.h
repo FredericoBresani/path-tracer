@@ -2,11 +2,6 @@
 #define __POINTLIGHT__
 
 #include "Light.h"
-#include "Points.h"
-#include "RGBColor.h"
-#include "HitInfo.h"
-#include <vector>
-#include "Vectors.h"
 
 
 class PointLight: public Light {

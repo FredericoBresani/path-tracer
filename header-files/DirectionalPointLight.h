@@ -1,13 +1,8 @@
 #ifndef __DIRECTIONALPOINTLIGHT__
 #define __DIRECTIONALPOINTLIGHT__
 
-#include "Light.h"
-#include "Points.h"
-#include "RGBColor.h"
 #include "HitInfo.h"
-#include <vector>
-#include "Vectors.h"
-
+#include "Light.h"
 
 class DirectionalPointLight: public Light {
     public:

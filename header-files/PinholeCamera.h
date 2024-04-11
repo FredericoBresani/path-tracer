@@ -2,20 +2,16 @@
 #define __PINHOLE__
 
 
-#include <vector>
 #include "Camera.h"
 #include "World.h"
-#include "Points.h"
-#include "Vectors.h"
 #include <iostream>
 #include "Light.h"
 #include "ScreenThread.h"
-#include <fstream>
 #include "Screen.h"
-#include <mutex>
 
 
-Screen *screen = new Screen();
+
+auto screen = std::make_shared<Screen>();
 std::mutex lock;
 
 class PinholeCamera: public Camera {
@@ -37,12 +33,12 @@ class PinholeCamera: public Camera {
 
 void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*> lights, Ambient ambient)
 {
-    Vec3D toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
+    auto toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
     Vec3D dir;
     screen->setPixelQtn(pixel_qtn_h*pixel_qtn_v);
     Vec3D lightX, lightNormal, lightZ;
-    for (int j = 0; j < lights.size(); j++) {  
+    for (uint32_t j = 0; j < lights.size(); j++) {  
         if (lights[j]->isExtense() && lights[j]->getLightModel()->getObjectType() == 't') {
             Point3D A, B, C;
             std::vector<Point3D> vertices = lights[j]->getMeshControlPoints();
@@ -94,8 +90,8 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*> lig
         start += threadRange;
         end += threadRange;
     }
-    for (int i = 0; i < threads.size(); i++) {
-        threads[i].join();
+    for (int t = 0; t < threads.size(); t++) {
+        threads[t].join();
     }
     std::cout << " [==============================] 100% \n";
     /* testing inconsitency
@@ -107,11 +103,11 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*> lig
     */
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";
-    for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++)
+    for (auto pixel : screen->pixels)
     {
-        pixelOutput <<(unsigned char)(std::max(double(1), screen->pixels[i].r)) <<
-            (unsigned char)(std::max(double(1), screen->pixels[i].g)) <<
-            (unsigned char)(std::max(double(1), screen->pixels[i].b));
+        pixelOutput <<  (unsigned char)(std::max(double(1), pixel.r)) <<
+                        (unsigned char)(std::max(double(1), pixel.g)) <<
+                        (unsigned char)(std::max(double(1), pixel.b));
     }
     pixelOutput.close();
 }

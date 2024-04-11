@@ -1,7 +1,6 @@
 #ifndef __CAMERA__
 #define __CAMERA__
 
-#include "Vectors.h"
 #include "Points.h"
 #include "Object.h"
 #include "Light.h"
@@ -34,9 +33,9 @@ void Camera::makeCamera()
     // Tha camera base should follow this order {w = z, v = y, u = x}
     pixel_qtn_h = (double)h_res/pixel_size;
     pixel_qtn_v = (double)v_res/pixel_size;
-    Vec3D toScreen = Vec3D::normalize(look_at - camera_pos);
+    auto toScreen = Vec3D::normalize(look_at - camera_pos);
     w = toScreen;
-    Vec3D WUP = w ^ up;
+    auto WUP = w ^ up;
     if (WUP.x == 0.0 && WUP.y == 0.0 && WUP.x == 0.0)
     {
         up = Vec3D(1.0, 0.0, 0.0);

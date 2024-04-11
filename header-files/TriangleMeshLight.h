@@ -1,13 +1,12 @@
 #ifndef __TRIANGLEMESHLIGHT__
 #define __TRIANGLEMESHLIGHT__
 
-#include "RGBColor.h"
+
+#include "Definitions.h"
 #include "Object.h"
 #include "TriangleMesh.h"
 #include "Light.h"
-#include "HitInfo.h"
-#include "Vectors.h"
-#include <stdlib.h>
+
 
 
 class TriangleMeshLight: public Light {
@@ -38,15 +37,15 @@ class TriangleMeshLight: public Light {
 
 void TriangleMeshLight::sampleLight(void) 
 {
-    std::vector<Point3D> vertices = this->light_model->vertices;
-    std::vector<Point3I> triangles = this->light_model->triangles;
-    for (int i = 0; i < this->n_samples; i++) {
-        for(int i = 0; i < triangles.size(); i++) {
+    auto vertices = this->light_model->vertices;
+    auto triangles = this->light_model->triangles;
+    for (uint32_t i = 0; i < this->n_samples; i++) {
+        for(auto triangle : triangles) {
             Point3D A, B, C, P, sample;
             Vec3D auxAB, auxPC;
-            A = vertices[triangles[i].x];
-            B = vertices[triangles[i].y];
-            C = vertices[triangles[i].z];
+            A = vertices[triangle.x];
+            B = vertices[triangle.y];
+            C = vertices[triangle.z];
             auxAB = B - A;
             P = A + (auxAB*((double)rand()/(double)RAND_MAX));
             auxPC = C - P;
@@ -97,8 +96,8 @@ std::vector<Point3D> TriangleMeshLight::getLightSamples()
 }
 std::vector<Point3D> TriangleMeshLight::getMeshControlPoints()
 {
-    std::vector<Point3D> vertices = this->light_model->vertices;
-    std::vector<Point3I> triangles = this->light_model->triangles;
+    auto vertices = this->light_model->vertices;
+    auto triangles = this->light_model->triangles;
     return {vertices[triangles[0].x], vertices[triangles[0].y], vertices[triangles[0].z]};
 }
 

@@ -3,19 +3,15 @@
 
 #include <thread>
 #include <mutex>
-#include <vector>
 #include <string>
 #include <iostream>
+#include <memory>
 
-#include "RGBColor.h"
 #include "Light.h"
-#include "Vectors.h"
 #include "World.h"
-#include "Ray.h"
 #include "Object.h"
 #include "Camera.h"
 #include "Ambient.h"
-#include "Points.h"
 #include "Screen.h"
 
 
@@ -23,9 +19,9 @@ class ScreenThread {
     public:
         int id, minIndex, maxIndex, barLength = 30;
         RGBColor copySumColor;
-        Screen *screen;
+        std::shared_ptr<Screen> screen;
 
-        ScreenThread(int i, int min, int max, Screen *scr): id(i), minIndex(min), maxIndex(max), screen(scr) {}
+        ScreenThread(int i, int min, int max, std::shared_ptr<Screen> scr): id(i), minIndex(min), maxIndex(max), screen(scr) {}
         ~ScreenThread() {}
 
         void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objetos, Camera camera, std::vector<Light*> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
@@ -39,8 +35,8 @@ class ScreenThread {
                 
                 RGBColor sumColor;
                 int invalidCount = 0;
-                for (int j = 0; j < camera.getNPaths(); j++) {
-                    RGBColor temp = trace(Ray(camera.getPos(), dir), objetos, camera, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, j);
+                for (uint32_t j = 0; j < camera.getNPaths(); j++) {
+                    auto temp = trace(Ray(camera.getPos(), dir), objetos, camera, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, j);
                     bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                     sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                     if (invalidPath) invalidCount++;
@@ -50,13 +46,13 @@ class ScreenThread {
                 lock.lock();
                 screen->pixels[i] = sumColor;
                 screen->checkPixel();
-                float progress = (float)screen->getDonePixelsQtn()/(float)screen->getPixelQtn();
-                int bars = (int)(((float)this->barLength)*progress);
+                auto progress = (float)screen->getDonePixelsQtn()/(float)screen->getPixelQtn();
+                auto bars = (int)(((float)this->barLength)*progress);
                 std::string bar = "";
-                for (int t = 0; t < bars; t++) {
+                for (uint32_t t = 0; t < bars; t++) {
                     bar += "=";
                 }
-                for (int t = bars; t < this->barLength; t++) {
+                for (uint32_t t = bars; t < this->barLength; t++) {
                     bar += " ";
                 }
                 std::cout << " [" << bar << "] " << (int)(progress*100) << "%\r";
