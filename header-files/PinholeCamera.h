@@ -28,10 +28,10 @@ class PinholeCamera: public Camera {
             paths = pths;
         }
         ~PinholeCamera() {}
-        void render(std::vector<Object*> objetos, std::vector<Light*> lights, Ambient ambient);
+        void render(std::vector<Object*> objetos, std::vector<std::shared_ptr<Light>> lights, Ambient ambient);
 };
 
-void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*> lights, Ambient ambient)
+void PinholeCamera::render(std::vector<Object*> objetos, std::vector<std::shared_ptr<Light>> lights, Ambient ambient)
 {
     auto toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
@@ -90,7 +90,7 @@ void PinholeCamera::render(std::vector<Object*> objetos, std::vector<Light*> lig
         start += threadRange;
         end += threadRange;
     }
-    for (int t = 0; t < threads.size(); t++) {
+    for (uint32_t t = 0; t < threads.size(); t++) {
         threads[t].join();
     }
     std::cout << " [==============================] 100% \n";

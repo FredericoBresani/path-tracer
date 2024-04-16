@@ -47,7 +47,7 @@ void traceLight(const Ray &ray, std::vector<Object*> objects, Light &light, Ambi
     double tmin = infinity;
     double kd, ks, ka, kr, kt, phongExp, ior;
     bool getShadows; 
-    auto hInfo = new HitInfo();
+    std::unique_ptr<HitInfo> hInfo(new HitInfo());
     RGBColor color, objectColor, flatColor, difuseColor, specularColor, reflectiveColor, transparentColor;
     if (depth == 0) {
         return;
@@ -139,7 +139,7 @@ void traceLight(const Ray &ray, std::vector<Object*> objects, Light &light, Ambi
     }
 }
 
-RGBColor trace(const Ray &ray, std::vector<Object*> objects, Camera camera, std::vector<Light*> lights, Ambient ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, int step)
+RGBColor trace(const Ray &ray, std::vector<Object*> objects, Camera camera, std::vector<std::shared_ptr<Light>> lights, Ambient ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, int step)
 {
     double t = infinity;
     double tmin = infinity;
@@ -204,7 +204,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, Camera camera, std:
         auto safeLight = false;
         RGBColor resultingColor, mixedColor, specularColor;
         auto hitPoint = hInfo->hit_location + hInfo->normal*0.001;
-        Light *l;
+        std::shared_ptr<Light> l;
         
         hInfo->toCamera = Vec3D::normalize(ray.origin - hInfo->hit_location);
         hInfo->viewerReflex = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toCamera)) - hInfo->toCamera);
@@ -225,9 +225,9 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, Camera camera, std:
         
         std::vector<Light*> lightPath;
 
-        Light *copyL = new PointLight(l->getPos(), l->getColor(), 1, 0);
+        std::unique_ptr<Light> copyL(new PointLight((*l).getPos(), (*l).getColor(), 1, 0));
         auto randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
-        lightPath.push_back(new PointLight(l->getPos(), copyL->getColor(), 1, 0));
+        lightPath.push_back(new PointLight((*l).getPos(), (*copyL).getColor(), 1, 0));
         traceLight(Ray(l->getPos(), randomLightDirection), objects, *copyL, ambient, ambient.depth, &lightPath);
 
         int successfulPaths = 0;

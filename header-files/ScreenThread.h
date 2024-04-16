@@ -24,7 +24,7 @@ class ScreenThread {
         ScreenThread(int i, int min, int max, std::shared_ptr<Screen> scr): id(i), minIndex(min), maxIndex(max), screen(scr) {}
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objetos, Camera camera, std::vector<Light*> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objetos, Camera camera, std::vector<std::shared_ptr<Light>> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
             
             Vec3D down;
             Vec3D dir;

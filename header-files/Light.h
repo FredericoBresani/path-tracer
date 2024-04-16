@@ -26,4 +26,5 @@ class Light
         int n_samples;
 };
 
+
 #endif

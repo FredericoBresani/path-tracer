@@ -24,7 +24,7 @@
 #include "./header-files/Vectors.h"
 #include "./header-files/World.h"
 
-void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &camera, Ambient &ambient)
+void render(std::vector<Object*> &objects, std::vector<std::shared_ptr<Light>> lights, Camera &camera, Ambient &ambient)
 {   // Para cada sample da luz gerar alguns caminhos sample
     // Gerar caminhos sample nada mais é do que atirar rais a partir da luz que resultarão num ponto associado a uma cor
     // 
@@ -33,7 +33,7 @@ void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &
 
 int main() {
     std::vector<Object*> objects;
-    std::vector<Light*> lights;
+    std::vector<std::shared_ptr<Light>> lights;
     Camera *camera;
     Ambient *ambient;
     char objectType;
@@ -95,13 +95,14 @@ int main() {
                         mesh->triangles.push_back(Point3I(i1, i2, i3));
                         _8--;
                     }
-                    auto l = new TriangleMeshLight(mater->color, mesh, (int)_14);
+                    std::shared_ptr<TriangleMeshLight> l(new TriangleMeshLight(mater->color, mesh, (int)_14));
                     for (int i = 0; i < l->getLightSamples().size(); i++) {
-                        lights.push_back(new PointLight(l->getLightSamples()[i], mater->color, (bool)_7, (int)_14));
+                        std::shared_ptr<PointLight> currentLight(new PointLight(l->getLightSamples()[i], mater->color, (bool)_7, (int)_14));
+                        lights.push_back(currentLight);
                     }
                     lights.push_back(l);
                 } else {
-                    auto l = new PointLight(Point3D(_1, _2, _3), RGBColor(_4, _5, _6), (bool)_7, (int)_14);
+                    std::shared_ptr<PointLight> l (new PointLight(Point3D(_1, _2, _3), RGBColor(_4, _5, _6), (bool)_7, (int)_14));
                     lights.push_back(l);
                 }
                 break;
