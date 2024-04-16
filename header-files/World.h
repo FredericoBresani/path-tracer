@@ -255,6 +255,10 @@ RGBColor trace(const Ray &ray, std::vector<std::shared_ptr<Object>> objects, Cam
             if (resultingColor.r + resultingColor.g + resultingColor.b > 70) {
                 (*energy) = resultingColor.r + resultingColor.g + resultingColor.b;
                 (*goodPath) = lightPath;
+            } else {
+                for (auto lightPoint : lightPath) {
+                    delete lightPoint;
+                }
             }
         }
 
