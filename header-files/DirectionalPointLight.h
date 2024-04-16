@@ -26,7 +26,7 @@ class DirectionalPointLight: public Light {
         bool castShadows();
         bool isExtense();
         void sampleLight();
-        Object* getLightModel();
+        std::shared_ptr<Object> getLightModel();
         std::vector<Point3D> getMeshControlPoints();
         void setColor(RGBColor &c);
         bool isDirectional();
@@ -69,7 +69,7 @@ void DirectionalPointLight::sampleLight()
     this->light_samples.push_back(this->lightPos);
 }
 
-Object* DirectionalPointLight::getLightModel()
+std::shared_ptr<Object> DirectionalPointLight::getLightModel()
 {
     return nullptr;
 }

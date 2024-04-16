@@ -11,8 +11,9 @@
 
 class TriangleMeshLight: public Light {
     public:
-        TriangleMeshLight(RGBColor color, TriangleMesh *mesh, int n): light_color(color), light_model(mesh) 
+        TriangleMeshLight(RGBColor color, TriangleMesh *mesh, int n): light_color(color) 
         {
+            light_model = std::make_shared<TriangleMesh>((*mesh));
             this->n_samples = n;
             this->sampleLight();
         }
@@ -20,7 +21,7 @@ class TriangleMeshLight: public Light {
         std::vector<Point3D> getLightSamples();
     private:
         RGBColor light_color;
-        TriangleMesh *light_model;
+        std::shared_ptr<TriangleMesh> light_model;
         void sampleLight();
         Vec3D getDirection(HitInfo &info);
         RGBColor incidentRadiance(HitInfo &info);
@@ -28,7 +29,7 @@ class TriangleMeshLight: public Light {
         RGBColor getColor();
         bool castShadows();
         bool isExtense();
-        Object* getLightModel();
+        std::shared_ptr<Object> getLightModel();
         std::vector<Point3D> getMeshControlPoints();
         void setColor(RGBColor &c);
         bool isDirectional();
@@ -60,7 +61,7 @@ bool TriangleMeshLight::isExtense()
     return true;
 }
 
-Object* TriangleMeshLight::getLightModel()
+std::shared_ptr<Object> TriangleMeshLight::getLightModel()
 {
     return this->light_model;
 }

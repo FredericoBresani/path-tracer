@@ -24,7 +24,7 @@ class ScreenThread {
         ScreenThread(int i, int min, int max, std::shared_ptr<Screen> scr): id(i), minIndex(min), maxIndex(max), screen(scr) {}
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objetos, Camera camera, std::vector<std::shared_ptr<Light>> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<std::shared_ptr<Object>> objects, Camera camera, std::vector<std::shared_ptr<Light>> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
             
             Vec3D down;
             Vec3D dir;
@@ -35,15 +35,22 @@ class ScreenThread {
                 
                 RGBColor sumColor;
                 int invalidCount = 0;
+                std::vector<Light*> goodPath = {};
+                double energy = 0;
+
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                    auto temp = trace(Ray(camera.getPos(), dir), objetos, camera, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, j);
+                    auto temp = trace(Ray(camera.getPos(), dir), objects, camera, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, &energy, &goodPath);
                     bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                     sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                     if (invalidPath) invalidCount++;
                 }
+
                 
                 sumColor = sumColor/((double)camera.getNPaths() - invalidCount);
                 lock.lock();
+                for (auto pathPoint : goodPath) {
+                    delete pathPoint;
+                }
                 screen->pixels[i] = sumColor;
                 screen->checkPixel();
                 auto progress = (float)screen->getDonePixelsQtn()/(float)screen->getPixelQtn();

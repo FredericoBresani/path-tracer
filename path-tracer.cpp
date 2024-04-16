@@ -24,15 +24,13 @@
 #include "./header-files/Vectors.h"
 #include "./header-files/World.h"
 
-void render(std::vector<Object*> &objects, std::vector<std::shared_ptr<Light>> lights, Camera &camera, Ambient &ambient)
-{   // Para cada sample da luz gerar alguns caminhos sample
-    // Gerar caminhos sample nada mais é do que atirar rais a partir da luz que resultarão num ponto associado a uma cor
-    // 
-    camera.render(objects, lights, ambient);
+void render(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<Light>> lights, Camera *camera, Ambient *ambient)
+{   
+    camera->render(objects, lights, (*ambient));
 }
 
 int main() {
-    std::vector<Object*> objects;
+    std::vector<std::shared_ptr<Object>> objects;
     std::vector<std::shared_ptr<Light>> lights;
     Camera *camera;
     Ambient *ambient;
@@ -48,7 +46,7 @@ int main() {
                 auto mater = new Material{
                     RGBColor(_5, _6, _7), _8, _9, _10, _11, _12, _13, (bool)_15, _16
                 };
-                auto e = new Sphere(Point3D(_1, _2, _3), _4, mater, (bool)_14);
+                std::shared_ptr<Sphere> e(new Sphere(Point3D(_1, _2, _3), _4, mater, (bool)_14));
                 objects.push_back(e);
                 break;    
             }
@@ -57,7 +55,7 @@ int main() {
                 auto mater = new Material{
                     RGBColor(_3, _4, _5), _6, _7, _8, _9, _10, _11, (bool)_13, _14
                 };
-                auto mesh = new TriangleMesh((int)_1, (int)_2, mater, (bool)_12);
+                std::shared_ptr<TriangleMesh> mesh(new TriangleMesh((int)_1, (int)_2, mater, (bool)_12));
 
                 float v1, v2, v3;
                 int i1, i2, i3;
@@ -128,7 +126,7 @@ int main() {
 
     auto start = std::chrono::high_resolution_clock::now();
     
-    render(objects, lights, *camera, *ambient);
+    render(objects, lights, camera, ambient);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
