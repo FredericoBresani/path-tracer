@@ -24,7 +24,7 @@ class ScreenThread {
         ScreenThread(int i, int min, int max, std::shared_ptr<Screen> scr): id(i), minIndex(min), maxIndex(max), screen(scr) {}
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<std::shared_ptr<Object>> objects, Camera camera, std::vector<std::shared_ptr<Light>> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objects, Camera camera, std::vector<Light*> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
             
             Vec3D down;
             Vec3D dir;
@@ -39,7 +39,7 @@ class ScreenThread {
                 // double energy = 0;
 
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                    auto temp = trace(Ray(camera.getPos(), dir), objects, camera, lights, ambient, ambient.depth, lightX, lightNormal, lightZ);
+                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ);
                     bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                     // sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                     sumColor = sumColor + temp;

@@ -10,7 +10,6 @@
 #include "Screen.h"
 
 
-
 auto screen = std::make_shared<Screen>();
 std::mutex lock;
 
@@ -28,10 +27,10 @@ class PinholeCamera: public Camera {
             paths = pths;
         }
         ~PinholeCamera() {}
-        void render(std::vector<std::shared_ptr<Object>> objetos, std::vector<std::shared_ptr<Light>> lights, Ambient ambient);
+        void render(std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient);
 };
 
-void PinholeCamera::render(std::vector<std::shared_ptr<Object>> objetos, std::vector<std::shared_ptr<Light>> lights, Ambient ambient)
+void PinholeCamera::render(std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient)
 {
     auto toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
@@ -61,7 +60,7 @@ void PinholeCamera::render(std::vector<std::shared_ptr<Object>> objetos, std::ve
                     ScreenThread(i, start, pixel_qtn_h*pixel_qtn_v, screen),
                     std::ref(lock), 
                     std::ref(toPixel),
-                    std::ref(objetos),
+                    std::ref(objects),
                     std::ref((*this)),
                     std::ref(lights),
                     std::ref(ambient),
@@ -76,7 +75,7 @@ void PinholeCamera::render(std::vector<std::shared_ptr<Object>> objetos, std::ve
                     ScreenThread(i, start, end, screen), 
                     std::ref(lock), 
                     std::ref(toPixel),
-                    std::ref(objetos),
+                    std::ref(objects),
                     std::ref((*this)),
                     std::ref(lights),
                     std::ref(ambient),

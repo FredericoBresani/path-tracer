@@ -24,14 +24,14 @@
 #include "./header-files/Vectors.h"
 #include "./header-files/World.h"
 
-void render(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<Light>> lights, Camera *camera, Ambient *ambient)
+void render(std::vector<Object*> objects, std::vector<Light*> lights, Camera *camera, Ambient *ambient)
 {   
     camera->render(objects, lights, (*ambient));
 }
 
 int main() {
-    std::vector<std::shared_ptr<Object>> objects;
-    std::vector<std::shared_ptr<Light>> lights;
+    std::vector<Object*> objects;
+    std::vector<Light*> lights;
     Camera *camera;
     Ambient *ambient;
     char objectType;
@@ -46,8 +46,7 @@ int main() {
                 auto mater = new Material{
                     RGBColor(_5, _6, _7), _8, _9, _10, _11, _12, _13, (bool)_15, _16
                 };
-                std::shared_ptr<Sphere> e(new Sphere(Point3D(_1, _2, _3), _4, mater, (bool)_14));
-                objects.push_back(e);
+                objects.push_back(new Sphere(Point3D(_1, _2, _3), _4, mater, (bool)_14));
                 break;    
             }
             case 't':
@@ -55,7 +54,7 @@ int main() {
                 auto mater = new Material{
                     RGBColor(_3, _4, _5), _6, _7, _8, _9, _10, _11, (bool)_13, _14
                 };
-                std::shared_ptr<TriangleMesh> mesh(new TriangleMesh((int)_1, (int)_2, mater, (bool)_12));
+                auto mesh = new TriangleMesh((int)_1, (int)_2, mater, (bool)_12);
 
                 float v1, v2, v3;
                 int i1, i2, i3;
@@ -93,15 +92,13 @@ int main() {
                         mesh->triangles.push_back(Point3I(i1, i2, i3));
                         _8--;
                     }
-                    std::shared_ptr<TriangleMeshLight> l(new TriangleMeshLight(mater->color, mesh, (int)_14));
+                    auto l = new TriangleMeshLight(mater->color, mesh, (int)_14);
                     for (int i = 0; i < l->getLightSamples().size(); i++) {
-                        std::shared_ptr<PointLight> currentLight(new PointLight(l->getLightSamples()[i], mater->color, (bool)_7, (int)_14));
-                        lights.push_back(currentLight);
+                        lights.push_back(new PointLight(l->getLightSamples()[i], mater->color, (bool)_7, (int)_14));
                     }
                     lights.push_back(l);
                 } else {
-                    std::shared_ptr<PointLight> l (new PointLight(Point3D(_1, _2, _3), RGBColor(_4, _5, _6), (bool)_7, (int)_14));
-                    lights.push_back(l);
+                    lights.push_back(new PointLight(Point3D(_1, _2, _3), RGBColor(_4, _5, _6), (bool)_7, (int)_14));
                 }
                 break;
             }

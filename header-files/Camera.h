@@ -15,7 +15,7 @@ class Camera {
         Vec3D getIUP();
         Vec3D getRight();
         int getPixelsH();
-        virtual void render(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<Light>> lights, Ambient ambient);
+        virtual void render(std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient);
         
         
     protected:
@@ -26,7 +26,7 @@ class Camera {
 
 };
 
-void Camera::render(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<Light>> lights, Ambient ambient) {}
+void Camera::render(std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient) {}
 
 void Camera::makeCamera()
 {
