@@ -15,7 +15,7 @@ class Object {
         bool castShadows;
         Object() {}
         virtual ~Object() {}
-        virtual bool rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info) = 0;
+        virtual bool rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info) = 0;
         virtual RGBColor getColor() = 0;
         virtual double getKd() = 0;
         virtual double getKs() = 0;

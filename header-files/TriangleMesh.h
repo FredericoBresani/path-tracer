@@ -22,7 +22,7 @@ class TriangleMesh: public Object {
         }
         ~TriangleMesh() {}
     private:
-        bool rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info);
+        bool rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info);
         RGBColor getColor();
         double getKd();
         double getKs();
@@ -38,7 +38,7 @@ class TriangleMesh: public Object {
         char getObjectType();
 };
 
-bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info) 
+bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info) 
 {
     double min = infinity;
     auto hit = false;
@@ -78,7 +78,7 @@ bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &inf
                 hit = true;
                 if ((*tmin) < min)
                 {
-                    info.hit_object = true;
+                    info->hit_object = true;
                     this->triangleIndice = i;
                     min = (*tmin);
                 }

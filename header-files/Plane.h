@@ -16,7 +16,7 @@ class Plane: public Object
             this->material = std::make_shared<Material>((*m));
         }
         ~Plane() {}
-        bool rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info);
+        bool rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info);
     private:
         RGBColor getColor();
         double getKd();
@@ -33,14 +33,14 @@ class Plane: public Object
         char getObjectType();
 };
 
-bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo& info)
+bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info)
 {
     double t = ((pp - ray.origin) * this->normal) / (ray.direction * this->normal);
     if (t > kEpsilon)
     {
         (*tmin) = t;
         if (!(this->getKd() == 0 && this->getKr() == 0 && this->getKs() == 0)) { // situation where is not beeing used as a subroutine
-            info.hit_object = true;                                         // to the triangle or mesh intersection test
+            info->hit_object = true;                                         // to the triangle or mesh intersection test
         }
         return true;
 

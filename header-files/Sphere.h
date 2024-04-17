@@ -19,7 +19,7 @@ class Sphere: public Object
         }
         ~Sphere() {}
     private:
-        bool rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info);
+        bool rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info);
         RGBColor getColor();
         double getKd();
         double getKs();
@@ -35,7 +35,7 @@ class Sphere: public Object
         char getObjectType();
 };
 
-bool Sphere::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo& info)
+bool Sphere::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info)
 {
     auto a = pow(Vec3D::norma(ray.direction), 2.0);
     auto b = ((ray.origin - this->center) * ray.direction) * 2.0;
@@ -47,7 +47,7 @@ bool Sphere::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo& info)
         if (t > kEpsilon)
         {
             (*tmin) = t;
-            info.hit_object = true;
+            info->hit_object = true;
             return true;
         } else {
             return false;
@@ -61,13 +61,13 @@ bool Sphere::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo& info)
         if ((t1 < t2) && (t1 > kEpsilon))
         {
             (*tmin) = t1;
-            info.hit_object = true;
+            info->hit_object = true;
             return true;
         }
         else if (t2 > kEpsilon)
         {
             (*tmin) = t2;
-            info.hit_object = true;
+            info->hit_object = true;
             return true;
         }
         return false;
