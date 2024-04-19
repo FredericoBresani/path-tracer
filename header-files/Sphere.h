@@ -18,8 +18,8 @@ class Sphere: public Object
             this->material = std::make_shared<Material>((*m));
         }
         ~Sphere() {}
-    private:
         bool rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info);
+    private:
         RGBColor getColor();
         double getKd();
         double getKs();
@@ -37,6 +37,7 @@ class Sphere: public Object
 
 bool Sphere::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info)
 {
+    std::unique_lock<std::mutex> lock(objectLock);
     auto a = pow(Vec3D::norma(ray.direction), 2.0);
     auto b = ((ray.origin - this->center) * ray.direction) * 2.0;
     auto c = ((this->center ^ this->center) + (ray.origin ^ ray.origin)) + (-2.0)*(ray.origin ^ this->center) - (this->radius*this->radius);

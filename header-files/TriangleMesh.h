@@ -5,7 +5,6 @@
 #include "Definitions.h"
 #include "Object.h"
 #include "Plane.h"
-#include <memory>
 
 
 class TriangleMesh: public Object {
@@ -20,9 +19,21 @@ class TriangleMesh: public Object {
         TriangleMesh(int n, int v, Material *m, bool s): nTriangles(n), nVertices(n), castShadows(s) {
             this->material = std::make_shared<Material>((*m));
         }
+        TriangleMesh(TriangleMesh &mesh) {
+            std::unique_lock<std::mutex> lock(objectLock);
+            material = mesh.material;
+            castShadows = mesh.castShadows;
+            nTriangles = mesh.nTriangles;
+            nVertices = mesh.nVertices;
+            triangleIndice = mesh.triangleIndice;
+            vertices = mesh.vertices;
+            triangles = mesh.triangles;
+            triangleNormals = mesh.triangleNormals;
+            verticesNormals = mesh.verticesNormals;
+        }
         ~TriangleMesh() {}
-    private:
         bool rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info);
+    private:
         RGBColor getColor();
         double getKd();
         double getKs();
@@ -41,7 +52,8 @@ class TriangleMesh: public Object {
 bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info) 
 {
     double min = infinity;
-    auto hit = false;
+    auto hit = false, nearerHit = false;
+    int hitIndex;
     for (int i = 0; i < triangles.size(); i++)
     {
         Point3D A, B, C;
@@ -56,7 +68,7 @@ bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_
         auto tempMaterial = new Material{
             RGBColor(), 0, 0, 0, 0, 0, 0, false, 0
         };
-        std::unique_ptr<Plane> tPlane(new Plane(tPlaneNormal, A, tempMaterial, true));
+        std::shared_ptr<Plane> tPlane(new Plane(tPlaneNormal, A, tempMaterial, true));
         Point3D pHit;
         if (tPlane->rayObjectIntersect(ray, tmin, info)) // to-do: the intersecion fails when 3 respective coordinates on
         {   // diferent points, equals to 0
@@ -78,8 +90,8 @@ bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_
                 hit = true;
                 if ((*tmin) < min)
                 {
-                    info->hit_object = true;
-                    this->triangleIndice = i;
+                    nearerHit = true;
+                    hitIndex = i;
                     min = (*tmin);
                 }
             }
@@ -90,7 +102,10 @@ bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_
 
     if (hit)
     {
+        std::unique_lock<std::mutex> lock(objectLock);
+        info->hit_object = true;
         (*tmin) = min;
+        this->triangleIndice = hitIndex;
         return true;
     }
     return false;

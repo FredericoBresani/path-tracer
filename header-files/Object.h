@@ -7,6 +7,7 @@
 #include "HitInfo.h"
 #include <vector>
 #include <memory>
+#include <mutex>
 
 
 class Object {
@@ -29,6 +30,8 @@ class Object {
         virtual bool getCastShadows() = 0;
         virtual std::vector<Point3D> sampleObject() = 0;
         virtual char getObjectType() = 0;
+    protected:
+        std::mutex objectLock;
 };
 
 #endif

@@ -30,11 +30,12 @@ class Plane: public Object
         bool getShadows();
         bool getCastShadows();
         std::vector<Point3D> sampleObject();
-        char getObjectType();
+        char getObjectType();  
 };
 
 bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info)
 {
+    std::unique_lock<std::mutex> lock(objectLock);
     double t = ((pp - ray.origin) * this->normal) / (ray.direction * this->normal);
     if (t > kEpsilon)
     {
