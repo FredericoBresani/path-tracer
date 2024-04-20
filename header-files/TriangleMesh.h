@@ -51,39 +51,38 @@ class TriangleMesh: public Object {
 
 bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info) 
 {
+    std::unique_lock<std::mutex> lock(objectLock);
     double min = infinity;
     auto hit = false, nearerHit = false;
     int hitIndex;
     for (int i = 0; i < triangles.size(); i++)
     {
-        Point3D A, B, C;
+        Point3D A, B, C, pHit;
         A = vertices[triangles[i].x];
         B = vertices[triangles[i].y];
         C = vertices[triangles[i].z]; 
+
         auto tPlaneNormal = (A - B) ^ (A - C);
         if (((ray.direction * (-1)) * tPlaneNormal) <= 0)
         {
             tPlaneNormal = (A - C) ^ (A - B);
         }
-        auto tempMaterial = new Material{
-            RGBColor(), 0, 0, 0, 0, 0, 0, false, 0
-        };
-        std::shared_ptr<Plane> tPlane(new Plane(tPlaneNormal, A, tempMaterial, true));
-        Point3D pHit;
-        if (tPlane->rayObjectIntersect(ray, tmin, info)) // to-do: the intersecion fails when 3 respective coordinates on
+
+        double t = ((A - ray.origin) * tPlaneNormal) / (ray.direction * tPlaneNormal); // intersection with support plane
+        
+        if (t > kEpsilon) // to-do: the intersecion fails when 3 respective coordinates on
         {   // diferent points, equals to 0
+            (*tmin) = t;
             pHit = ray.origin + ray.direction*(*tmin);      
             //|A.x B.x C.x||a|   |X|
             //|A.y B.y C.y||b| = |Y|
             //|A.z B.z C.z||g|   |Z|
             // gamma = 1 - alpha - beta
-            auto det = A.x*((B.y*C.z) - (C.y*B.z))  + B.x*((C.y*A.z) - (A.y*C.z)) + C.x*((A.y*B.z) - (B.y*A.z)); 
+            auto det = A.x*((B.y*C.z) - (C.y*B.z)) + B.x*((C.y*A.z) - (A.y*C.z)) + C.x*((A.y*B.z) - (B.y*A.z)); 
 
-            auto alpha = (pHit.x*((B.y*C.z) - (C.y*B.z))  + B.x*((C.y*pHit.z) - (pHit.y*C.z)) + C.x*((pHit.y*B.z) - (B.y*pHit.z)))/det;
-            // if (alpha > 1 || alpha < 0) return false;
+            auto alpha = (pHit.x*((B.y*C.z) - (C.y*B.z)) + B.x*((C.y*pHit.z) - (pHit.y*C.z)) + C.x*((pHit.y*B.z) - (B.y*pHit.z)))/det;
 
-            auto beta = (A.x*((pHit.y*C.z) - (C.y*pHit.z))  + pHit.x*((C.y*A.z) - (A.y*C.z)) + C.x*((A.y*pHit.z) - (pHit.y*A.z)))/det;
-
+            auto beta = (A.x*((pHit.y*C.z) - (C.y*pHit.z)) + pHit.x*((C.y*A.z) - (A.y*C.z)) + C.x*((A.y*pHit.z) - (pHit.y*A.z)))/det;
             
             if (beta > 0 && alpha > 0 && (beta + alpha < 1))
             {
@@ -97,12 +96,10 @@ bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_
             }
             // auto gama = (A.x*B.y*pHit.z - A.x*pHit.y*B.z - B.x*A.y*pHit.z + B.x*pHit.y*A.z + pHit.x*A.y*B.z - pHit.x*B.y*A.z)/det; 
         }
-        delete tempMaterial;
     }
 
     if (hit)
     {
-        std::unique_lock<std::mutex> lock(objectLock);
         info->hit_object = true;
         (*tmin) = min;
         this->triangleIndice = hitIndex;
@@ -166,6 +163,7 @@ bool TriangleMesh::getCastShadows()
 }
 std::vector<Point3D> TriangleMesh::sampleObject()
 {
+    std::unique_lock<std::mutex> lock(objectLock);
     std::vector<Point3D> samples = {Point3D()};
     return samples;
 }

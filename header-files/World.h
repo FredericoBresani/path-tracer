@@ -15,6 +15,10 @@
 #include "TriangleMesh.h"
 #include "DirectionalPointLight.h"
 
+std::vector<Light*> goodPath;
+std::vector<std::vector<Light*>> pathsFound;
+double energy = 0;
+
 
 bool inShadow(Ray ray, std::vector<Object*> objects, float lightDistance, HitInfo &info)
 {
@@ -138,7 +142,7 @@ void traceLight(const Ray &ray, std::vector<Object*> objects, std::shared_ptr<Li
     }
 }
 
-RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ)
+RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, int step)
 {
     double t = infinity;
     double tmin = infinity;
@@ -147,6 +151,10 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
     std::shared_ptr<HitInfo> hInfo(new HitInfo());
     RGBColor color, objectColor, flatColor, difuseColor, specularColor, reflectiveColor, transparentColor;
 
+    if (step == 1) {
+        goodPath = {};
+        energy = 0;
+    }
     if (depth == 0) {
         return RGBColor(0, 0, 0);
     }
@@ -225,7 +233,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
         lightPath.push_back(new PointLight((*l).getPos(), (*copyL).getColor(), 1, 0));
         traceLight(Ray((*l).getPos(), randomLightDirection), objects, copyL, ambient, ambient.depth, &lightPath);
 
-        if (l) l = nullptr;
+        // if (l) l = nullptr;
 
         int successfulPaths = 0;
         bool pathFound = false;
@@ -247,30 +255,26 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
                              
                 } else {
                     if (hInfo->transparent) {
-                       resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
+                       resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, step))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                     }
                 }
             }
         }
 
-        /*
         if (pathFound) {
             resultingColor = resultingColor/(double)successfulPaths;
+            // pathsFound->push_back(lightPath);
             if (resultingColor.r + resultingColor.g + resultingColor.b > 70) {
-                (*energy) = resultingColor.r + resultingColor.g + resultingColor.b;
-                (*goodPath) = lightPath;
-            } else {
-                for (auto lightPoint : lightPath) {
-                    delete lightPoint;
-                }
+                energy = resultingColor.r + resultingColor.g + resultingColor.b;
+                goodPath = lightPath;
             }
         }
 
-        if (goodPath->size() > 0 && (*energy) > (resultingColor.r + resultingColor.g + resultingColor.b)) {
+        if (goodPath.size() > 0 && energy > (resultingColor.r + resultingColor.g + resultingColor.b)) {
             resultingColor = RGBColor();
             successfulPaths = 0;
             pathFound = false;
-            for (auto pathLight : (*goodPath)) {
+            for (auto pathLight : goodPath) {
                 auto theColor = pathLight->getColor();
                 auto whereIsTheLight = pathLight->getPos();
                 auto lightDistance = Vec3D::norma(pathLight->getPos() - hInfo->hit_location);
@@ -288,32 +292,28 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
                                        
                     } else {
                         if (hInfo->transparent) {
-                            resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, camera, lights, ambient, depth - 1, lightX, lightNormal, lightZ, energy, goodPath))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
+                            resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, step))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                         }
                     }
                 }
             }
         }
-        */
 
         if (pathFound) {
             resultingColor = resultingColor/(double)successfulPaths;
-            for (auto points : lightPath) {
-                delete points;
-            } 
         }
 
         flatColor = (ambient.color*ka + resultingColor*kd)/2.0;
         color = flatColor;
 
         if (kd > 0) {
-            color = (color + trace(Ray(hInfo->hit_location, difuseDirection), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ))/2.0;
+            color = (color + trace(Ray(hInfo->hit_location, difuseDirection), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, step))/2.0;
         }
         if (ks > 0) {
-            color = (color + trace(Ray(hitPoint, reflexDirection), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ))*(ks/2.0);
+            color = (color + trace(Ray(hitPoint, reflexDirection), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, step))*(ks/2.0);
         }
         if (kr > 0) {
-            color = (color + trace(Ray(hitPoint, hInfo->viewerReflex), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ))*(kr);
+            color = (color + trace(Ray(hitPoint, hInfo->viewerReflex), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, step))*(kr);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
         if (kt > 0) { 
@@ -330,7 +330,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
             auto cos2 = sqrt(temp);
             hInfo->refraction = hInfo->toCamera*(-1)/eta - (hInfo->normal*(cos2 - cos/eta));
             hitPoint = hitPoint + hInfo->refraction*0.015;
-            color = (color + trace(Ray(hitPoint, hInfo->refraction), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ))*(kt);
+            color = (color + trace(Ray(hitPoint, hInfo->refraction), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, step))*(kt);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
         return color;

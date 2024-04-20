@@ -24,6 +24,7 @@ class Light
         bool shadows;
         std::vector<Point3D> light_samples;
         int n_samples;
+        std::mutex lightLock;
 };
 
 

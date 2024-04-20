@@ -66,6 +66,7 @@ bool DirectionalPointLight::isExtense()
 
 void DirectionalPointLight::sampleLight()
 {
+    std::unique_lock<std::mutex> lock(lightLock);
     this->light_samples.push_back(this->lightPos);
 }
 
@@ -86,6 +87,7 @@ std::vector<Point3D> DirectionalPointLight::getMeshControlPoints()
 
 void DirectionalPointLight::setColor(RGBColor &c)
 {
+    std::unique_lock<std::mutex> lock(lightLock);
     this->lightColor = c;
 }
 

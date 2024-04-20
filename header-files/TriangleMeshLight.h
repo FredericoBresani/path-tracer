@@ -38,6 +38,7 @@ class TriangleMeshLight: public Light {
 
 void TriangleMeshLight::sampleLight(void) 
 {
+    std::unique_lock<std::mutex> lock(lightLock);
     auto vertices = this->light_model->vertices;
     auto triangles = this->light_model->triangles;
     for (uint32_t i = 0; i < this->n_samples; i++) {
@@ -104,6 +105,7 @@ std::vector<Point3D> TriangleMeshLight::getMeshControlPoints()
 
 void TriangleMeshLight::setColor(RGBColor &c)
 {
+    std::unique_lock<std::mutex> lock(lightLock);
     this->light_color = c;
 }
 

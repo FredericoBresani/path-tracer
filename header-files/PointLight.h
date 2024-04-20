@@ -63,6 +63,7 @@ bool PointLight::isExtense()
 
 void PointLight::sampleLight()
 {
+    std::unique_lock<std::mutex> lock(lightLock);
     this->light_samples.push_back(this->lightPos);
 }
 
@@ -83,6 +84,7 @@ std::vector<Point3D> PointLight::getMeshControlPoints()
 
 void PointLight::setColor(RGBColor &c)
 {
+    std::unique_lock<std::mutex> lock(lightLock);
     this->lightColor = c;
 }
 

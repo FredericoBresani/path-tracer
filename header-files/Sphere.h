@@ -121,6 +121,7 @@ bool Sphere::getCastShadows()
 }
 std::vector<Point3D> Sphere::sampleObject()
 {
+    std::unique_lock<std::mutex> lock(objectLock);
     std::vector<Point3D> samples = {Point3D()};
     return samples;
 }

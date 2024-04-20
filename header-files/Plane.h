@@ -13,6 +13,9 @@ class Plane: public Object
         std::shared_ptr<Material> material;
         bool castShadows;
         Plane(const Vec3D &n, const Point3D &p, Material *m, bool s): normal(n), pp(p), castShadows(s) {
+            this->normal = n;
+            this->pp = p;
+            this->castShadows = s;
             this->material = std::make_shared<Material>((*m));
         }
         ~Plane() {}
@@ -40,9 +43,7 @@ bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<Hit
     if (t > kEpsilon)
     {
         (*tmin) = t;
-        if (!(this->getKd() == 0 && this->getKr() == 0 && this->getKs() == 0)) { // situation where is not beeing used as a subroutine
-            info->hit_object = true;                                         // to the triangle or mesh intersection test
-        }
+        info->hit_object = true;                                      
         return true;
 
     } else {
@@ -95,6 +96,7 @@ bool Plane::getCastShadows()
 }
 std::vector<Point3D> Plane::sampleObject()
 {
+    std::unique_lock<std::mutex> lock(objectLock);
     std::vector<Point3D> samples = {Point3D()};
     return samples;
 }
