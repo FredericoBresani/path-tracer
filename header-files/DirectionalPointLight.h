@@ -6,9 +6,10 @@
 
 class DirectionalPointLight: public Light {
     public:
-        DirectionalPointLight(const Point3D& pos, const RGBColor& color, bool s, int n, Vec3D directional): 
-            lightPos(pos), lightColor(color), directionalVec(directional) 
-        {
+        DirectionalPointLight(const Point3D& pos, const RGBColor& color, bool s, int n, Vec3D directional) {
+            this->lightPos = pos;
+            this->lightColor = color;
+            this->directionalVec = directional;
             this->shadows = s;
             this->n_samples = n;
         }

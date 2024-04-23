@@ -11,9 +11,9 @@
 
 class TriangleMeshLight: public Light {
     public:
-        TriangleMeshLight(RGBColor color, TriangleMesh *mesh, int n): light_color(color) 
-        {
+        TriangleMeshLight(RGBColor color, TriangleMesh *mesh, int n) {
             light_model = std::make_shared<TriangleMesh>((*mesh));
+            this->light_color = color;
             this->n_samples = n;
             this->sampleLight();
         }

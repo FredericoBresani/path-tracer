@@ -6,9 +6,17 @@
 
 class PointLight: public Light {
     public:
-        PointLight(const Point3D& pos, const RGBColor& color, bool s, int n): lightPos(pos), lightColor(color) {
+        PointLight(const Point3D& pos, const RGBColor& color, bool s, int n) {
+            this->lightPos = pos;
+            this->lightColor = color;
             this->shadows = s;
             this->n_samples = n;
+        }
+        PointLight(Light &l) {
+            this->lightPos = l.getPos();
+            this->lightColor = l.getColor();
+            this->shadows = 1;
+            this->n_samples = 0;
         }
         ~PointLight() {}
         std::vector<Point3D> getLightSamples();

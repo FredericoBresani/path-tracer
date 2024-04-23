@@ -34,10 +34,13 @@ class ScreenThread {
                 dir = toPixel + down + (camera.getRight() * (i % camera.getPixelsH())); 
                 
                 RGBColor sumColor;
-                int invalidCount = 0; 
+                int invalidCount = 0;
+                std::vector<Light*> goodPath = {};
+                std::vector<std::vector<Light*>> pathsFound = {};
+                double energy = 0; 
 
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, camera.getNPaths() - j);
+                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, &energy, &goodPath);
                     bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                     // sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                     sumColor = sumColor + temp;
