@@ -6,12 +6,9 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <chrono>
 
-#include "Light.h"
 #include "World.h"
-#include "Object.h"
-#include "Camera.h"
-#include "Ambient.h"
 #include "Screen.h"
 
 
@@ -24,7 +21,7 @@ class ScreenThread {
         ScreenThread(int i, int min, int max, std::shared_ptr<Screen> scr): id(i), minIndex(min), maxIndex(max), screen(scr) {}
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objects, Camera camera, std::vector<Light*> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objects, Camera camera, std::vector<Light*> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, MetropolisManager *metroManager) {
             
             Vec3D down;
             Vec3D dir;
@@ -35,16 +32,20 @@ class ScreenThread {
                 
                 RGBColor sumColor;
                 int invalidCount = 0;
-                std::vector<Light*> goodPath = {};
-                std::vector<std::vector<Light*>> pathsFound = {};
-                double energy = 0; 
-
+                metroManager->energy = 0;
+                metroManager->goodPath = {};
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, &energy, &goodPath);
+                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metroManager);
                     bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
-                    // sumColor = sumColor + (invalidPath ? RGBColor() : temp);
+                    sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                     sumColor = sumColor + temp;
-                    // if (invalidPath) invalidCount++;
+                    if (invalidPath) invalidCount++;
+                }
+                
+                if (metroManager->goodPath.size()) {
+                    for (auto point : metroManager->goodPath) {
+                        if (point) delete point;
+                    }
                 }
                 
                 sumColor = sumColor/((double)camera.getNPaths() - invalidCount);
@@ -63,6 +64,7 @@ class ScreenThread {
                 std::cout << " [" << bar << "] " << (int)(progress*100) << "%\r";
                 std::cout.flush();
                 lock.unlock();
+                // std::this_thread::sleep_for(std::chrono::milliseconds(1));
             } 
         }
 };
