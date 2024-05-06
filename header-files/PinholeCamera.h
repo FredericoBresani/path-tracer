@@ -55,7 +55,7 @@ void PinholeCamera::render(std::vector<Object*> objects, std::vector<Light*> lig
     int start = 0, end = threadRange;
     std::vector<std::thread> threads;
     for (int i = 0; i < ambient.nThreds && start <= pixel_qtn_h*pixel_qtn_v - 1; i++) {
-        MetropolisManager *metropolis_manager = new MetropolisManager();
+        MetropolisManager *metropolis_manager = new MetropolisManager(); //not deleted
         if (end > pixel_qtn_h*pixel_qtn_v - 1) {
             threads.push_back(
                 std::thread(
@@ -98,11 +98,11 @@ void PinholeCamera::render(std::vector<Object*> objects, std::vector<Light*> lig
     std::cout << " [==============================] 100% \n";
     /* testing inconsitency
     std::ofstream MyFile ("output.txt");
-    for (int i = 0; i < pixel_qtn_h*pixel_qtn_v; i++) {
-        MyFile << "RGBColor(" << pixels[i].r << ", " << pixels[i].g << ", " << pixels[i].b << ");\n";
+    for (auto pixel : screen->pixels) {
+        MyFile << "RGBColor(" << pixel.r << ", " << pixel.g << ", " << pixel.b << ");\n";
     }
-    MyFile.close();
-    */
+    MyFile.close();*/
+    
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";
     for (auto pixel : screen->pixels)

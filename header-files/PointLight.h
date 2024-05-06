@@ -51,12 +51,12 @@ RGBColor PointLight::incidentRadiance(HitInfo &hit)
 
 Point3D PointLight::getPos()
 {
-    return this->lightPos;
+    return (*this).lightPos;
 }
 
 RGBColor PointLight::getColor()
 {
-    return this->lightColor;
+    return (*this).lightColor;
 }
 
 bool PointLight::castShadows()

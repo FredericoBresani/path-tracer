@@ -200,7 +200,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
         auto safeLight = false;
         RGBColor resultingColor, mixedColor, specularColor;
         auto hitPoint = hInfo->hit_location + hInfo->normal*0.001;
-        Light *l;
+        Light *l; // not deleted
         
         hInfo->toCamera = Vec3D::normalize(ray.origin - hInfo->hit_location);
         hInfo->viewerReflex = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toCamera)) - hInfo->toCamera);
@@ -226,7 +226,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
         lightPath.push_back(new PointLight((*l)));
         traceLight(Ray((*l).getPos(), randomLightDirection), objects, copyL, ambient, ambient.depth, &lightPath);
 
-        if (l) l = nullptr;
+        // if (l) l = nullptr;
 
         int successfulPaths = 0;
         bool pathFound = false;
@@ -258,11 +258,11 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
             resultingColor = resultingColor/(double)successfulPaths;
             if (resultingColor.r + resultingColor.g + resultingColor.b > 70) {
                 metroManager->energy = resultingColor.r + resultingColor.g + resultingColor.b;
-                metroManager->goodPath = lightPath;
+                metroManager->goodPath = lightPath; // not deleted
             } else {
-                for (auto point : lightPath) {
-                    if (point) delete point;
-                }
+               for (auto point : lightPath) {
+                    if (point) delete point; point = nullptr;
+               }
             }
         }
 
@@ -278,14 +278,12 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
                 if(pathLight->castShadows() && getShadows) {
                     if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
                     { 
-        
                         mixedColor = (((pathLight->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                         if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
                             pathFound = true;
                             resultingColor = resultingColor + mixedColor; 
                             successfulPaths++;
-                        }
-                                       
+                        }      
                     } else {
                         if (hInfo->transparent) {
                             resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, metroManager))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
