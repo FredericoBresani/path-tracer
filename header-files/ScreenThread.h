@@ -17,11 +17,14 @@ class ScreenThread {
         int id, minIndex, maxIndex, barLength = 30;
         RGBColor copySumColor;
         std::shared_ptr<Screen> screen;
+        MetropolisManager *metropolis_manager;
 
-        ScreenThread(int i, int min, int max, std::shared_ptr<Screen> scr): id(i), minIndex(min), maxIndex(max), screen(scr) {}
+        ScreenThread(int i, int min, int max, std::shared_ptr<Screen> scr): id(i), minIndex(min), maxIndex(max), screen(scr) {
+            this->metropolis_manager = new MetropolisManager();
+        }
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objects, Camera camera, std::vector<Light*> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, MetropolisManager *metroManager) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> objects, Camera camera, std::vector<Light*> lights, Ambient ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
             
             Vec3D down;
             Vec3D dir;
@@ -32,20 +35,13 @@ class ScreenThread {
                 
                 RGBColor sumColor;
                 int invalidCount = 0;
-                metroManager->energy = 0;
-                metroManager->goodPath = {}; // not deleted
+                metropolis_manager->energy = 0;
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metroManager);
+                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, (*metropolis_manager));
                     bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                     sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                     if (invalidPath) invalidCount++;
                 }
-                
-                /*if (metroManager->goodPath.size()) {
-                    for (auto point : metroManager->goodPath) {
-                        if (point) delete point;
-                    }
-                }*/
                 
                 sumColor = sumColor/((double)camera.getNPaths() - invalidCount);
                 lock.lock();

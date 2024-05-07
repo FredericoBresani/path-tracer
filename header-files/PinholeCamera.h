@@ -55,7 +55,6 @@ void PinholeCamera::render(std::vector<Object*> objects, std::vector<Light*> lig
     int start = 0, end = threadRange;
     std::vector<std::thread> threads;
     for (int i = 0; i < ambient.nThreds && start <= pixel_qtn_h*pixel_qtn_v - 1; i++) {
-        MetropolisManager *metropolis_manager = new MetropolisManager(); //not deleted
         if (end > pixel_qtn_h*pixel_qtn_v - 1) {
             threads.push_back(
                 std::thread(
@@ -68,8 +67,7 @@ void PinholeCamera::render(std::vector<Object*> objects, std::vector<Light*> lig
                     std::ref(ambient),
                     std::ref(lightX),
                     std::ref(lightNormal),
-                    std::ref(lightZ),
-                    std::ref(metropolis_manager)
+                    std::ref(lightZ)
                 )
             );
         } else {
@@ -84,8 +82,7 @@ void PinholeCamera::render(std::vector<Object*> objects, std::vector<Light*> lig
                     std::ref(ambient),
                     std::ref(lightX),
                     std::ref(lightNormal),
-                    std::ref(lightZ),
-                    std::ref(metropolis_manager)
+                    std::ref(lightZ)
                 )
             );
         }

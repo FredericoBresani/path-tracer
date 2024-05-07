@@ -10,12 +10,10 @@ class MetropolisManager {
     public:
         double energy;
         std::vector<Light*> goodPath;
-        std::vector<std::vector<Light*>> foundGoodPaths;
+        std::vector<Light*> foundPaths;
 
         MetropolisManager() {
             this->energy = 0;
-            this->goodPath = {};
-            this->foundGoodPaths = {};
         }
 
 };

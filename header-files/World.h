@@ -41,7 +41,7 @@ bool inShadow(Ray ray, std::vector<Object*> objects, float lightDistance, HitInf
     return false;
 }
 
-void traceLight(const Ray &ray, std::vector<Object*> objects, std::shared_ptr<Light> light, Ambient ambient, int depth, std::vector<Light*> *path)
+void traceLight(const Ray &ray, std::vector<Object*> objects, Light* light, Ambient ambient, int depth, std::vector<Light*> *path)
 {
     double t = infinity;
     double tmin = infinity;
@@ -102,7 +102,8 @@ void traceLight(const Ray &ray, std::vector<Object*> objects, std::shared_ptr<Li
         light->setColor(color);
         
         if (kd > 0) {
-            path->push_back(new PointLight(hInfo->hit_location, color*kd, 1, 0));
+            Light *pathLight = new PointLight(hInfo->hit_location, color*kd, 1, 0);
+            path->push_back(pathLight);
             traceLight(Ray(hInfo->hit_location, difuseDirection), objects, light, ambient, depth - 1, path);
         }
         if (ks > 0) {
@@ -111,7 +112,8 @@ void traceLight(const Ray &ray, std::vector<Object*> objects, std::shared_ptr<Li
         if (kr > 0) {
             auto r = newLightColor*kr;
             light->setColor(r);
-            path->push_back(new DirectionalPointLight(hInfo->hit_location, color*kr, 1, 0, hInfo->viewerReflex));
+            Light *pathLight = new DirectionalPointLight(hInfo->hit_location, color*kr, 1, 0, hInfo->viewerReflex);
+            path->push_back(pathLight);
             traceLight(Ray(hitPoint, hInfo->viewerReflex), objects, light, ambient, depth - 1, path);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
@@ -132,14 +134,15 @@ void traceLight(const Ray &ray, std::vector<Object*> objects, std::shared_ptr<Li
 
             auto r = newLightColor*kt;
             light->setColor(r);
-            path->push_back(new DirectionalPointLight(hitPoint, newLightColor*kt, 1, 0, hInfo->refraction));
+            Light *pathLight = new DirectionalPointLight(hitPoint, newLightColor*kt, 1, 0, hInfo->refraction);
+            path->push_back(pathLight);
             traceLight(Ray(hitPoint, hInfo->refraction), objects, light, ambient, depth - 1, path);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
     }
 }
 
-RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, MetropolisManager *metroManager)
+RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, MetropolisManager &metroManager)
 {
     double t = infinity;
     double tmin = infinity;
@@ -221,9 +224,10 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
 
         std::vector<Light*> lightPath = {};
         
-        std::shared_ptr<Light> copyL(new PointLight((*l)));
+        Light* copyL = new PointLight((*l));
         auto randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
-        lightPath.push_back(new PointLight((*l)));
+        Light *first = new PointLight((*l));
+        lightPath.push_back(first);
         traceLight(Ray((*l).getPos(), randomLightDirection), objects, copyL, ambient, ambient.depth, &lightPath);
 
         // if (l) l = nullptr;
@@ -238,14 +242,12 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
             if(pathLight->castShadows() && getShadows) {
                 if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
                 { 
-                    
                     mixedColor = (((pathLight->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                     if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
                         pathFound = true;
                         resultingColor = resultingColor + mixedColor; 
                         successfulPaths++;
-                    }  
-                             
+                    }      
                 } else {
                     if (hInfo->transparent) {
                        resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, metroManager))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
@@ -254,25 +256,29 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
             }
         }
 
+        bool foundGoodPath = false;
         if (pathFound) {
             resultingColor = resultingColor/(double)successfulPaths;
             if (resultingColor.r + resultingColor.g + resultingColor.b > 70) {
-                metroManager->energy = resultingColor.r + resultingColor.g + resultingColor.b;
-                metroManager->goodPath = lightPath; // not deleted
+                foundGoodPath = true;
+                metroManager.energy = resultingColor.r + resultingColor.g + resultingColor.b;
+                for (auto point : metroManager.goodPath) {
+                    if (point) delete point;
+                }
+                metroManager.goodPath = lightPath; // not deleted
             } else {
-               for (auto point : lightPath) {
-                    if (point) delete point; point = nullptr;
-               }
+                for (auto point : lightPath) {
+                    if (point) delete point;
+                }
             }
         }
 
-        if (metroManager->goodPath.size() > 0 && metroManager->energy > (resultingColor.r + resultingColor.g + resultingColor.b)) {
+        pathFound = false;
+        if (foundGoodPath) {
             resultingColor = RGBColor();
             successfulPaths = 0;
-            pathFound = false;
-            for (auto pathLight : metroManager->goodPath) {
-                auto theColor = pathLight->getColor();
-                auto whereIsTheLight = pathLight->getPos();
+            for (auto pathLight : metroManager.goodPath) {
+                Point3D whereIsTheLight = pathLight->getPos();
                 auto lightDistance = Vec3D::norma(pathLight->getPos() - hInfo->hit_location);
                 hInfo->toLight = Vec3D::normalize(pathLight->getDirection((*hInfo)));
                 if(pathLight->castShadows() && getShadows) {
