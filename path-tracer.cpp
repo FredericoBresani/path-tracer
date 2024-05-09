@@ -7,8 +7,6 @@
 
 #include "./header-files/Ambient.h"
 #include "./header-files/Camera.h"
-#include "./header-files/Definitions.h"
-#include "./header-files/HitInfo.h"
 #include "./header-files/Light.h"
 #include "./header-files/Material.h"
 #include "./header-files/Object.h"
@@ -16,7 +14,6 @@
 #include "./header-files/Plane.h"
 #include "./header-files/PointLight.h"
 #include "./header-files/Points.h"
-#include "./header-files/Ray.h"
 #include "./header-files/RGBColor.h"
 #include "./header-files/Sphere.h"
 #include "./header-files/TriangleMesh.h"
@@ -24,9 +21,9 @@
 #include "./header-files/Vectors.h"
 #include "./header-files/World.h"
 
-void render(std::vector<Object*> objects, std::vector<Light*> lights, Camera *camera, Ambient *ambient)
+void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &camera, Ambient &ambient)
 {   
-    camera->render(objects, lights, (*ambient));
+    camera.render(objects, lights, ambient);
 }
 
 int main() {
@@ -123,7 +120,7 @@ int main() {
 
     auto start = std::chrono::high_resolution_clock::now();
     
-    render(objects, lights, camera, ambient);
+    render(objects, lights, (*camera), (*ambient));
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);

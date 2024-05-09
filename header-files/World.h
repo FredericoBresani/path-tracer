@@ -41,7 +41,7 @@ bool inShadow(Ray ray, std::vector<Object*> objects, float lightDistance, HitInf
     return false;
 }
 
-void traceLight(const Ray &ray, std::vector<Object*> objects, Light* light, Ambient ambient, int depth, std::vector<Light*> *path)
+void traceLight(const Ray &ray, std::vector<Object*> &objects, Light* &light, Ambient &ambient, int depth, std::vector<Light*> *path)
 {
     double t = infinity;
     double tmin = infinity;
@@ -142,7 +142,7 @@ void traceLight(const Ray &ray, std::vector<Object*> objects, Light* light, Ambi
     }
 }
 
-RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*> lights, Ambient ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, MetropolisManager &metroManager)
+RGBColor trace(const Ray &ray, std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, int depth, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, std::shared_ptr<MetropolisManager> &metroManager)
 {
     double t = infinity;
     double tmin = infinity;
@@ -261,11 +261,15 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
             resultingColor = resultingColor/(double)successfulPaths;
             if (resultingColor.r + resultingColor.g + resultingColor.b > 70) {
                 foundGoodPath = true;
-                metroManager.energy = resultingColor.r + resultingColor.g + resultingColor.b;
-                for (auto point : metroManager.goodPath) {
-                    if (point) delete point;
+                metroManager->energy = resultingColor.r + resultingColor.g + resultingColor.b;
+                // for (auto point : metroManager->goodPath) {
+                //    if (point) delete point;
+                //}
+                metroManager->goodPath = {};
+                for (auto point : lightPath) {
+                    if (point) metroManager->goodPath.push_back(point);
                 }
-                metroManager.goodPath = lightPath; // not deleted
+                
             } else {
                 for (auto point : lightPath) {
                     if (point) delete point;
@@ -277,7 +281,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> objects, std::vector<Light*>
         if (foundGoodPath) {
             resultingColor = RGBColor();
             successfulPaths = 0;
-            for (auto pathLight : metroManager.goodPath) {
+            for (auto pathLight : metroManager->goodPath) {
                 Point3D whereIsTheLight = pathLight->getPos();
                 auto lightDistance = Vec3D::norma(pathLight->getPos() - hInfo->hit_location);
                 hInfo->toLight = Vec3D::normalize(pathLight->getDirection((*hInfo)));
