@@ -38,7 +38,7 @@ class Plane: public Object
 
 bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info)
 {
-    std::unique_lock<std::mutex> lock(objectLock);
+    // std::unique_lock<std::mutex> lock(objectLock);
     double t = ((pp - ray.origin) * this->normal) / (ray.direction * this->normal);
     if (t > kEpsilon)
     {
@@ -96,7 +96,6 @@ bool Plane::getCastShadows()
 }
 std::vector<Point3D> Plane::sampleObject()
 {
-    std::unique_lock<std::mutex> lock(objectLock);
     std::vector<Point3D> samples = {Point3D()};
     return samples;
 }

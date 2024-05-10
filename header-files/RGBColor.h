@@ -31,6 +31,8 @@ template <typename T> class COLOR
             return max;
         }
 
+        bool operator > (const COLOR<T> &v) const { return (r + g + b) > (v.r + v.g + v.b); }
+
         COLOR<T> operator & (const Vec3<T> &v) const { return COLOR(r + v.x, g + v.y, b + v.z); }
         //COLOR<T> operator ! (const Vec3<T> &v) const { return COLOR(r - v.x, g - v.y, b - v.z); }
 };

@@ -36,8 +36,12 @@ class ScreenThread {
                 RGBColor sumColor;
                 int invalidCount = 0;
                 metropolis_manager->energy = 0;
+                for (auto point : metropolis_manager->goodPath) {
+                    delete point;
+                }
+                metropolis_manager->goodPath = {};
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager);
+                    auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
                     bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                     sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                     if (invalidPath) invalidCount++;
@@ -56,8 +60,8 @@ class ScreenThread {
                 for (uint32_t t = bars; t < this->barLength; t++) {
                     bar += " ";
                 }
-                std::cout << " [" << bar << "] " << (int)(progress*100) << "%\r";
                 std::cout.flush();
+                std::cout << " [" << bar << "] " << (int)(progress*100) << "%\r";
                 lock.unlock();
             } 
         }

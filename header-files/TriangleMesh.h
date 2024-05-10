@@ -51,7 +51,6 @@ class TriangleMesh: public Object {
 
 bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info) 
 {
-    std::unique_lock<std::mutex> lock(objectLock);
     double min = infinity;
     auto hit = false, nearerHit = false;
     int hitIndex;
@@ -163,7 +162,6 @@ bool TriangleMesh::getCastShadows()
 }
 std::vector<Point3D> TriangleMesh::sampleObject()
 {
-    std::unique_lock<std::mutex> lock(objectLock);
     std::vector<Point3D> samples = {Point3D()};
     return samples;
 }
