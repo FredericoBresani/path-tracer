@@ -18,15 +18,27 @@ class PointLight: public Light {
             this->shadows = 1;
             this->n_samples = 0;
         }
+        PointLight(std::shared_ptr<PointLight> &l) {
+            this->lightPos = l->getPos();
+            this->lightColor = l->getColor();
+            this->shadows = 1;
+            this->n_samples = 0;
+        }
+        PointLight(PointLight *l) {
+            this->lightPos = l->getPos();
+            this->lightColor = l->getColor();
+            this->shadows = 1;
+            this->n_samples = 0;
+        }
         ~PointLight() {}
         std::vector<Point3D> getLightSamples();
+        Point3D getPos();
         
     private:
         Point3D lightPos;
         RGBColor lightColor;
         Vec3D getDirection(HitInfo &hit);
         RGBColor incidentRadiance(HitInfo &hit);
-        Point3D getPos();
         RGBColor getColor();
         bool castShadows();
         bool isExtense();

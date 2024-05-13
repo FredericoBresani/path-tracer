@@ -70,7 +70,7 @@ bool TriangleMesh::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_
         double t = ((A - ray.origin) * tPlaneNormal) / (ray.direction * tPlaneNormal); // intersection with support plane
         
         if (t > kEpsilon) // to-do: the intersecion fails when 3 respective coordinates on
-        {   // diferent points, equals to 0
+        {                 // diferent points, equals to 0
             (*tmin) = t;
             pHit = ray.origin + ray.direction*(*tmin);      
             //|A.x B.x C.x||a|   |X|

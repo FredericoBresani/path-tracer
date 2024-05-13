@@ -41,7 +41,7 @@ bool inShadow(Ray ray, std::vector<Object*> objects, float lightDistance, HitInf
     return false;
 }
 
-void traceLight(const Ray &ray, std::vector<Object*> &objects, Light* &light, Ambient &ambient, int depth, std::vector<Light*> *path)
+void traceLight(const Ray &ray, std::vector<Object*> &objects, std::shared_ptr<Light> &light, Ambient &ambient, int depth, std::vector<std::shared_ptr<Light>> *path)
 {
     double t = infinity;
     double tmin = infinity;
@@ -102,8 +102,9 @@ void traceLight(const Ray &ray, std::vector<Object*> &objects, Light* &light, Am
         light->setColor(color);
         
         if (kd > 0) {
-            Light *pathLight = new PointLight(hInfo->hit_location, color*kd, 1, 0);
+            std::shared_ptr<Light> pathLight(new PointLight(hInfo->hit_location, color*kd, 1, 0));
             path->push_back(pathLight);
+            pathLight = nullptr;
             traceLight(Ray(hInfo->hit_location, difuseDirection), objects, light, ambient, depth - 1, path);
         }
         if (ks > 0) {
@@ -112,8 +113,9 @@ void traceLight(const Ray &ray, std::vector<Object*> &objects, Light* &light, Am
         if (kr > 0) {
             auto r = newLightColor*kr;
             light->setColor(r);
-            Light *pathLight = new DirectionalPointLight(hInfo->hit_location, color*kr, 1, 0, hInfo->viewerReflex);
+            std::shared_ptr<Light> pathLight(new DirectionalPointLight(hInfo->hit_location, color*kr, 1, 0, hInfo->viewerReflex));
             path->push_back(pathLight);
+            pathLight = nullptr;
             traceLight(Ray(hitPoint, hInfo->viewerReflex), objects, light, ambient, depth - 1, path);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
@@ -134,8 +136,9 @@ void traceLight(const Ray &ray, std::vector<Object*> &objects, Light* &light, Am
 
             auto r = newLightColor*kt;
             light->setColor(r);
-            Light *pathLight = new DirectionalPointLight(hitPoint, newLightColor*kt, 1, 0, hInfo->refraction);
+            std::shared_ptr<Light> pathLight(new DirectionalPointLight(hitPoint, newLightColor*kt, 1, 0, hInfo->refraction));
             path->push_back(pathLight);
+            pathLight = nullptr;
             traceLight(Ray(hitPoint, hInfo->refraction), objects, light, ambient, depth - 1, path);
             color = RGBColor(std::min(color.r, 255.0), std::min(color.g, 255.0), std::min(color.b, 255.0));
         }
@@ -203,8 +206,8 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, std::vector<Light*
         auto safeLight = false;
         RGBColor resultingColor, mixedColor, specularColor, resultingGoodPathColor;
         auto hitPoint = hInfo->hit_location + hInfo->normal*0.001;
-        Light *l; // not deleted
-        
+        std::shared_ptr<PointLight> l;
+
         hInfo->toCamera = Vec3D::normalize(ray.origin - hInfo->hit_location);
         hInfo->viewerReflex = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toCamera)) - hInfo->toCamera);
 
@@ -217,20 +220,22 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, std::vector<Light*
         while (!safeLight) {
             int index = (int)rand() % lights.size();
             if (!lights[index]->isExtense()) {
-                l = lights[index];
+                l = std::make_shared<PointLight>(new PointLight((*lights[index])));
                 safeLight = true;
             }
         }
 
-        std::vector<Light*> lightPath = {};
+        std::vector<std::shared_ptr<Light>> lightPath = {};
         
-        Light* copyL = new PointLight((*l));
+        std::shared_ptr<Light> copyL(new PointLight(l));
         auto randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
-        Light *first = new PointLight((*l));
+        std::shared_ptr<Light> first(new PointLight(l));
         lightPath.push_back(first);
         traceLight(Ray((*l).getPos(), randomLightDirection), objects, copyL, ambient, ambient.depth, &lightPath);
 
-        // if (l) l = nullptr;
+        l = nullptr;
+        copyL = nullptr;
+        first = nullptr;
 
         int successfulPaths = 0;
         bool pathFound = false;
@@ -262,23 +267,15 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, std::vector<Light*
             if (resultingColor.r + resultingColor.g + resultingColor.b > 70) {
                 sameAsLightPath = true;
                 metroManager->energy = resultingColor.r + resultingColor.g + resultingColor.b;
-                for (auto point : metroManager->goodPath) {
-                    delete point;
-                }
                 metroManager->goodPath = {};
                 for (auto point : lightPath) {
                     metroManager->goodPath.push_back(point);
                 }
-                
             } else {
-                for (auto point : lightPath) {
-                    delete point;
-                }
+                lightPath = {};
             }
         } else {
-            for (auto point : lightPath) {
-                delete point;
-            }
+            lightPath = {};
         }
 
         pathFound = false;

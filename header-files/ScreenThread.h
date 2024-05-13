@@ -36,9 +36,6 @@ class ScreenThread {
                 RGBColor sumColor;
                 int invalidCount = 0;
                 metropolis_manager->energy = 0;
-                for (auto point : metropolis_manager->goodPath) {
-                    delete point;
-                }
                 metropolis_manager->goodPath = {};
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
                     auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
