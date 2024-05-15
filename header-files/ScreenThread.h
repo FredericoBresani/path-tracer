@@ -44,6 +44,9 @@ class ScreenThread {
                     Vec3D sampleY = camera.getIUP()*(-1.0)*aliasUnit.y;
                     
                     metropolis_manager->energy = 0;
+                    for (auto point : metropolis_manager->goodPath) {
+                        delete point;
+                    }
                     metropolis_manager->goodPath = {};
                     for (uint32_t j = 0; j < camera.getNPaths(); j++) {
                         auto temp = trace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
@@ -56,6 +59,9 @@ class ScreenThread {
 
                 // No aliasing
                 metropolis_manager->energy = 0;
+                for (auto point : metropolis_manager->goodPath) {
+                    delete point;
+                }
                 metropolis_manager->goodPath = {};
                 for (uint32_t j = 0; j < camera.getNPaths(); j++) {
                     auto temp = trace(Ray(camera.getPos(), dir), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
@@ -80,6 +86,7 @@ class ScreenThread {
                 std::cout.flush();
                 std::cout << " [" << bar << "] " << (int)(progress*100) << "%\r";
                 lock.unlock();
+                std::this_thread::sleep_for(std::chrono::milliseconds(1/1000));
             } 
         }
 };

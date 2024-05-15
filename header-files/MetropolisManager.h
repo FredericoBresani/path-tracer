@@ -9,7 +9,7 @@
 class MetropolisManager {
     public:
         double energy;
-        std::vector<std::shared_ptr<Light>> goodPath;
+        std::vector<Light*> goodPath;
 
         MetropolisManager() {
             this->energy = 0;
