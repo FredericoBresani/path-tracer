@@ -9,6 +9,7 @@
 #include "ScreenThread.h"
 #include "Screen.h"
 #include "MetropolisManager.h"
+#include "JitteredSampler.h"
 
 
 auto screen = std::make_shared<Screen>();
@@ -24,12 +25,17 @@ class PinholeCamera: public Camera {
             camera_pos = pos;
             look_at = _lookAt;
             pixel_size = p;
-            n_samples = s;
+            n_samples_aliasing = s;
             paths = pths;
         }
         ~PinholeCamera() {}
+        void setSampler();
         void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient);
 };
+
+void PinholeCamera::setSampler() {
+    sampler_ptr = new JitteredSampler(n_samples_aliasing);
+}
 
 void PinholeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient)
 {

@@ -4,6 +4,8 @@
 #include "Points.h"
 #include "Object.h"
 #include "Light.h"
+#include "Sampler.h"
+#include "JitteredSampler.h"
 
 class Camera {
     public:
@@ -16,10 +18,13 @@ class Camera {
         Vec3D getRight();
         int getPixelsH();
         virtual void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient);
+        virtual void setSampler() = 0;
+        Sampler* getSampler();
         
         
     protected:
-        int h_res, v_res, n_samples, pixel_qtn_h, pixel_qtn_v, paths;
+        Sampler *sampler_ptr;
+        int h_res, v_res, n_samples_aliasing, pixel_qtn_h, pixel_qtn_v, paths;
         double distance, pixel_size, focal_distance, fish_eye_angle;
         Vec3D up, u, v, w, right, iup;
         Point3D camera_pos, look_at;
@@ -27,6 +32,10 @@ class Camera {
 };
 
 void Camera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient) {}
+
+Sampler* Camera::getSampler() {
+    return sampler_ptr;
+}
 
 void Camera::makeCamera()
 {
@@ -49,6 +58,7 @@ void Camera::makeCamera()
         right =  u*(2.0/pixel_qtn_v);
         iup = v*(2.0/pixel_qtn_v); 
     }
+    this->setSampler();
 }
 
 int Camera::getHr()
@@ -84,6 +94,10 @@ Vec3D Camera::getRight()
 int Camera::getPixelsH()
 {
     return this->pixel_qtn_h;
+}
+
+void Camera::setSampler() {
+    sampler_ptr = new JitteredSampler(n_samples_aliasing);
 }
 
 #endif

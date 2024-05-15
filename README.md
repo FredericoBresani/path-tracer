@@ -135,7 +135,7 @@ c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional paths
 # p: pixel size
 # s: samples
 # optional: it could be the focal plane distance or the fish eye camera max angle (from 0 to 2PI rad)
-# paths: The number of rays shot per intersection 
+# paths: The number of rays shot per pixel
 ```
 
 -----
