@@ -28,12 +28,12 @@ I will compare a comom path tracer, a simple implementation of a bidirectional p
 -----
 
 #### Cornell box - Metropolis light transport
-![Cornell box](presets/cornell-box-30-samples-caustics-metropolis.png)
+![Cornell box](presets/cornell-box-30-samples-caustics.png)
 - A cornell box with caustics on;
 - Using 1 to 30 permutations by path;
 
 #### Edge case Cornell box - Metropolis light transport
-![Edge case Cornell box](presets/edge-case-30-samples-caustics-metropolis.png)
+![Edge case Cornell box](presets/edge-case-30-samples-caustics.png)
 - A cornell box with a plane blocking the direct illumination of the light;
 - Caustics on;
 - Using 1 to 30 permutations by path;
