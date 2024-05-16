@@ -1,19 +1,19 @@
 #ifndef __TRIANGLEMESHLIGHT__
 #define __TRIANGLEMESHLIGHT__
 
-#include "RGBColor.h"
+
+#include "Definitions.h"
 #include "Object.h"
 #include "TriangleMesh.h"
 #include "Light.h"
-#include "HitInfo.h"
-#include "Vectors.h"
-#include <stdlib.h>
+
 
 
 class TriangleMeshLight: public Light {
     public:
-        TriangleMeshLight(RGBColor color, TriangleMesh *mesh, int n): light_color(color), light_model(mesh) 
-        {
+        TriangleMeshLight(RGBColor color, TriangleMesh *mesh, int n) {
+            light_model = std::make_shared<TriangleMesh>((*mesh));
+            this->light_color = color;
             this->n_samples = n;
             this->sampleLight();
         }
@@ -21,7 +21,7 @@ class TriangleMeshLight: public Light {
         std::vector<Point3D> getLightSamples();
     private:
         RGBColor light_color;
-        TriangleMesh *light_model;
+        std::shared_ptr<TriangleMesh> light_model;
         void sampleLight();
         Vec3D getDirection(HitInfo &info);
         RGBColor incidentRadiance(HitInfo &info);
@@ -29,20 +29,25 @@ class TriangleMeshLight: public Light {
         RGBColor getColor();
         bool castShadows();
         bool isExtense();
-        Object* getLightModel();
+        std::shared_ptr<Object> getLightModel();
+        std::vector<Point3D> getMeshControlPoints();
+        void setColor(RGBColor &c);
+        bool isDirectional();
+        Vec3D getDirectionalVec();
 };
 
 void TriangleMeshLight::sampleLight(void) 
 {
-    std::vector<Point3D> vertices = this->light_model->vertices;
-    std::vector<Point3I> triangles = this->light_model->triangles;
-    for (int i = 0; i < this->n_samples; i++) {
-        for(int i = 0; i < triangles.size(); i++) {
+    std::unique_lock<std::mutex> lock(lightLock);
+    auto vertices = this->light_model->vertices;
+    auto triangles = this->light_model->triangles;
+    for (uint32_t i = 0; i < this->n_samples; i++) {
+        for(auto triangle : triangles) {
             Point3D A, B, C, P, sample;
             Vec3D auxAB, auxPC;
-            A = vertices[triangles[i].x];
-            B = vertices[triangles[i].y];
-            C = vertices[triangles[i].z];
+            A = vertices[triangle.x];
+            B = vertices[triangle.y];
+            C = vertices[triangle.z];
             auxAB = B - A;
             P = A + (auxAB*((double)rand()/(double)RAND_MAX));
             auxPC = C - P;
@@ -57,7 +62,7 @@ bool TriangleMeshLight::isExtense()
     return true;
 }
 
-Object* TriangleMeshLight::getLightModel()
+std::shared_ptr<Object> TriangleMeshLight::getLightModel()
 {
     return this->light_model;
 }
@@ -91,8 +96,27 @@ std::vector<Point3D> TriangleMeshLight::getLightSamples()
 {
     return this->light_samples;
 }
+std::vector<Point3D> TriangleMeshLight::getMeshControlPoints()
+{
+    auto vertices = this->light_model->vertices;
+    auto triangles = this->light_model->triangles;
+    return {vertices[triangles[0].x], vertices[triangles[0].y], vertices[triangles[0].z]};
+}
 
+void TriangleMeshLight::setColor(RGBColor &c)
+{
+    std::unique_lock<std::mutex> lock(lightLock);
+    this->light_color = c;
+}
 
+bool TriangleMeshLight::isDirectional()
+{
+    return false;
+}
 
+Vec3D TriangleMeshLight::getDirectionalVec()
+{
+    return Vec3D();
+}
 
 #endif

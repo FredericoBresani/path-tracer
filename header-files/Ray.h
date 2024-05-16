@@ -2,7 +2,6 @@
 #define __RAY__
 
 #include "Points.h"
-#include "Vectors.h"
 
 class Ray {
     public:

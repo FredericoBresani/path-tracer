@@ -2,12 +2,7 @@
 #define __PLANE__
 
 #include "Object.h"
-#include "Points.h"
-#include "Vectors.h"
 #include "Definitions.h"
-#include "RGBColor.h"
-#include "Material.h"
-#include <vector>
 
 
 class Plane: public Object 
@@ -15,11 +10,16 @@ class Plane: public Object
     public:
         Vec3D normal;
         Point3D pp;
-        Material *material;
+        std::shared_ptr<Material> material;
         bool castShadows;
-        Plane(const Vec3D &n, const Point3D &p, Material *m, bool s): normal(n), pp(p), material(m), castShadows(s) {}
+        Plane(const Vec3D &n, const Point3D &p, Material *m, bool s): normal(n), pp(p), castShadows(s) {
+            this->normal = n;
+            this->pp = p;
+            this->castShadows = s;
+            this->material = std::make_shared<Material>((*m));
+        }
         ~Plane() {}
-        bool rayObjectIntersect(const Ray &ray, double *tmin, HitInfo &info);
+        bool rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info);
     private:
         RGBColor getColor();
         double getKd();
@@ -33,17 +33,17 @@ class Plane: public Object
         bool getShadows();
         bool getCastShadows();
         std::vector<Point3D> sampleObject();
+        char getObjectType();  
 };
 
-bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, HitInfo& info)
+bool Plane::rayObjectIntersect(const Ray &ray, double *tmin, std::shared_ptr<HitInfo> info)
 {
+    // std::unique_lock<std::mutex> lock(objectLock);
     double t = ((pp - ray.origin) * this->normal) / (ray.direction * this->normal);
     if (t > kEpsilon)
     {
         (*tmin) = t;
-        if (!(this->getKd() == 0 && this->getKr() == 0 && this->getKs() == 0)) { // situation where is not beeing used as a subroutine
-            info.hit_object = true;                                         // to the triangle or mesh intersection test
-        }
+        info->hit_object = true;                                      
         return true;
 
     } else {
@@ -98,6 +98,10 @@ std::vector<Point3D> Plane::sampleObject()
 {
     std::vector<Point3D> samples = {Point3D()};
     return samples;
+}
+char Plane::getObjectType()
+{
+    return 'p';
 }
 
 #endif
