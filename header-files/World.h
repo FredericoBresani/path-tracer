@@ -244,7 +244,7 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, Camera &camera, st
                     }               
                 } else {
                     if (hInfo->transparent) {
-                        resultingColor = resultingColor + trace(Ray(hInfo->hit_location, hInfo->toLight), objects, camera, lights, ambient, depth - 1, lightX, lightNormal, lightZ);
+                        resultingColor = resultingColor + ((objectColor ^ trace(Ray(hInfo->hit_location, hInfo->toLight), objects, camera, lights, ambient, depth - 1, lightX, lightNormal, lightZ))/255.0*std::max(hInfo->normal*hInfo->toLight, 0.0));
                     }
                 }
             }
