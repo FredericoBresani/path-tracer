@@ -6,7 +6,7 @@ I will compare a comom path tracer, a simple implementation of a bidirectional p
 ### Results
 
 #### Cornell box - Common Path tracer
-![Cornell box](presets/cornell-box-30-samples-caustics.png)
+![Cornell box](common-path-tracer/presets/cornell-box-30-samples-caustics.png)
 - A cornell box with caustics on;
 
 #### Edge case Cornell box - Common Path tracer
