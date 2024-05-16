@@ -10,30 +10,30 @@ I will compare a comom path tracer, a simple implementation of a bidirectional p
 - A cornell box with caustics on;
 
 #### Edge case Cornell box - Common Path tracer
-![Edge case Cornell box](presets/edge-case-30-samples-caustics.png)
+<img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/common-path-tracer/presets/edge-case-30-samples-caustics.png">
 - A cornell box with a plane blocking the direct illumination of the light;
 - Caustics on;
 
 -----
 
 #### Cornell box - Bidirectional path tracer
-![Cornell box](cornell-box-30-samples-caustics-bidirectional.png)
+<img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/bidirectional-path-tracing/presets/cornell-box-30-samples-caustics.png">
 - A cornell box with caustics on;
 
 #### Edge case Cornell box - Bidirectional path tracer
-![Edge case Cornell box](edge-case-30-samples-caustics-bidirectional.png)
+<img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/bidirectional-path-tracing/presets/edge-case-30-samples-caustics.png">
 - A cornell box with a plane blocking the direct illumination of the light;
 - Caustics on;
 
 -----
 
 #### Cornell box - Metropolis light transport
-![Cornell box](cornell-box-30-samples-caustics-metropolis.png)
+![Cornell box](presets/cornell-box-30-samples-caustics-metropolis.png)
 - A cornell box with caustics on;
 - Using 1 to 30 permutations by path;
 
 #### Edge case Cornell box - Metropolis light transport
-![Edge case Cornell box](edge-case-30-samples-caustics-metropolis.png)
+![Edge case Cornell box](presets/edge-case-30-samples-caustics-metropolis.png)
 - A cornell box with a plane blocking the direct illumination of the light;
 - Caustics on;
 - Using 1 to 30 permutations by path;
