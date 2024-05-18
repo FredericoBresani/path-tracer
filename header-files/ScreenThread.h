@@ -36,7 +36,7 @@ class ScreenThread {
                 RGBColor sumColor;
                 int invalidCount = 0;
                 // anti-aliasing 
-                /*
+                
                 int samplesByRow = sqrt(camera.getSampler()->get_num_samples());
                 for (int iSamples = 0; iSamples < camera.getSampler()->get_num_samples(); iSamples++) {
                     Point2D aliasUnit = camera.getSampler()->sample_unit_square();
@@ -55,9 +55,10 @@ class ScreenThread {
                         if (invalidPath) invalidCount++;
                     }
                 }
-                sumColor = sumColor/((double)camera.getSampler()->get_num_samples()*((double)camera.getNPaths() - invalidCount));*/
+                sumColor = sumColor/((double)camera.getSampler()->get_num_samples()*((double)camera.getNPaths() - invalidCount));
 
                 // No aliasing
+                /*
                 metropolis_manager->energy = 0;
                 for (auto point : metropolis_manager->goodPath) {
                     delete point;
@@ -70,6 +71,7 @@ class ScreenThread {
                     if (invalidPath) invalidCount++;
                 }
                 sumColor = sumColor/((double)camera.getNPaths() - invalidCount);
+                */
                 //
                 lock.lock();
                 screen->pixels[i] = sumColor;

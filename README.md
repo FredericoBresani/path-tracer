@@ -1,9 +1,19 @@
 # Path tracer
-Here a show some results rendered in a 300x300 resolution with 5 to 7 depth of recursion.
+Here I show some results rendered in a 300x300 resolution with 5 to 7 depth of recursion.
 Using 30 paths per pixel.
 I will compare a comom path tracer, a simple implementation of a bidirectional path tracer and a simple implemetentio of the Metropolis light transport.
 
 ### Results
+
+#### A small comparison between the common path tracer and the one with the metropolis light transport - On an edge case where a plane blocks the direct illumination of the light
+
+Common Path tracer            |  Metropolis Light Transport Path tracer
+:-------------------------:|:-------------------------:
+<img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/common-path-tracer/presets/edge-case-30-samples-caustics.png"> | ![Edge case Cornell box](presets/edge-case-30-samples-caustics.png)
+
+
+
+
 
 #### Cornell box - Common Path tracer
 <img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/common-path-tracer/presets/cornell-box-30-samples-caustics.png">
