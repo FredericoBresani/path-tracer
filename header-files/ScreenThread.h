@@ -56,7 +56,7 @@ class ScreenThread {
                     }
                 }
                 sumColor = sumColor/((double)camera.getSampler()->get_num_samples()*((double)camera.getNPaths() - invalidCount));
-
+                
                 // No aliasing
                 /*
                 metropolis_manager->energy = 0;
