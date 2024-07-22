@@ -1,9 +1,19 @@
 # Path tracer
-Here a show some results rendered in a 300x300 resolution with 5 to 7 depth of recursion.
+Here I show some results rendered in a 300x300 resolution with 5 to 7 depth of recursion.
 Using 30 paths per pixel.
 I will compare a comom path tracer, a simple implementation of a bidirectional path tracer and a simple implemetentio of the Metropolis light transport.
 
 ### Results
+
+#### A small comparison between the common path tracer and the one with the metropolis light transport - On an edge case where a plane blocks the direct illumination of the light
+
+Common Path tracer            |  Metropolis Light Transport Path tracer
+:-------------------------:|:-------------------------:
+<img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/common-path-tracer/presets/edge-case-30-samples-caustics.png"> | ![Edge case Cornell box](presets/edge-case-30-samples-caustics.png)
+
+
+
+
 
 #### Cornell box - Common Path tracer
 <img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/common-path-tracer/presets/cornell-box-30-samples-caustics.png">
@@ -37,6 +47,30 @@ I will compare a comom path tracer, a simple implementation of a bidirectional p
 - A cornell box with a plane blocking the direct illumination of the light;
 - Caustics on;
 - Using 1 to 30 permutations by path;
+
+### Execution
+```bash
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer common < test.txt && python ./convert.py
+
+# Open the "path-tracer" directory in the terminal and run the following command to excute the bidirectional path tracer version
+$ g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer bidirectional < test.txt && python ./convert.py
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the metropolis path tracer version
+$ g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer metropolis < test.txt && python ./convert.py
+
+# Or use the shortcuts if you have npm installed
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ npm run start:common
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ npm run start:bidirectional
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ npm run start:metropolis
+```
+
 
 ### input format
 #### Spheres
@@ -124,7 +158,7 @@ l l1 l2 l3 R G B s nt nv -0 -0 os ms ns -0 -0 -0 -0
 
 #### Camera
 ```bash
-c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional paths
+c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s paths
 # c: identify a camera
 # h_res: horizontal resolution
 # v_res: vertical resolution
@@ -134,7 +168,6 @@ c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional paths
 # (m1, m2, m3): the coordintes of the location the the camera points at
 # p: pixel size
 # s: samples
-# optional: it could be the focal plane distance or the fish eye camera max angle (from 0 to 2PI rad)
 # paths: The number of rays shot per pixel
 ```
 

@@ -24,7 +24,7 @@ class ScreenThread {
         }
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> &objects, Camera &camera, std::vector<Light*> &lights, Ambient &ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> &objects, Camera &camera, std::vector<Light*> &lights, Ambient &ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, std::string version) {
             
             Vec3D down;
             Vec3D dir;
@@ -36,7 +36,7 @@ class ScreenThread {
                 RGBColor sumColor;
                 int invalidCount = 0;
                 // anti-aliasing 
-                /*
+                
                 int samplesByRow = sqrt(camera.getSampler()->get_num_samples());
                 for (int iSamples = 0; iSamples < camera.getSampler()->get_num_samples(); iSamples++) {
                     Point2D aliasUnit = camera.getSampler()->sample_unit_square();
@@ -49,15 +49,23 @@ class ScreenThread {
                     }
                     metropolis_manager->goodPath = {};
                     for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                        auto temp = trace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
+                        RGBColor temp;
+                        if (version == "common") {
+                            temp = trace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth);
+                        } else if (version == "bidirectional") {
+                            temp = bidirectionalTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ);
+                        } else if (version == "metropolis") {
+                            temp = metropolisTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
+                        }
                         bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                         sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                         if (invalidPath) invalidCount++;
                     }
                 }
-                sumColor = sumColor/((double)camera.getSampler()->get_num_samples()*((double)camera.getNPaths() - invalidCount));*/
-
+                sumColor = sumColor/((double)camera.getSampler()->get_num_samples()*((double)camera.getNPaths() - invalidCount));
+                
                 // No aliasing
+                /*
                 metropolis_manager->energy = 0;
                 for (auto point : metropolis_manager->goodPath) {
                     delete point;
@@ -70,6 +78,7 @@ class ScreenThread {
                     if (invalidPath) invalidCount++;
                 }
                 sumColor = sumColor/((double)camera.getNPaths() - invalidCount);
+                */
                 //
                 lock.lock();
                 screen->pixels[i] = sumColor;

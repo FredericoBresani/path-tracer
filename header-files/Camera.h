@@ -17,7 +17,7 @@ class Camera {
         Vec3D getIUP();
         Vec3D getRight();
         int getPixelsH();
-        virtual void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient);
+        virtual void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version);
         virtual void setSampler() = 0;
         Sampler* getSampler();
         
@@ -31,7 +31,7 @@ class Camera {
 
 };
 
-void Camera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient) {}
+void Camera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version) {}
 
 Sampler* Camera::getSampler() {
     return sampler_ptr;
