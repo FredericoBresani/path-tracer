@@ -24,7 +24,7 @@ class ScreenThread {
         }
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> &objects, Camera &camera, std::vector<Light*> &lights, Ambient &ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> &objects, Camera &camera, std::vector<Light*> &lights, Ambient &ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, std::string version) {
             
             Vec3D down;
             Vec3D dir;
@@ -49,7 +49,14 @@ class ScreenThread {
                     }
                     metropolis_manager->goodPath = {};
                     for (uint32_t j = 0; j < camera.getNPaths(); j++) {
-                        auto temp = trace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
+                        RGBColor temp;
+                        if (version == "common") {
+                            temp = trace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth);
+                        } else if (version == "bidirectional") {
+                            temp = bidirectionalTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ);
+                        } else if (version == "metropolis") {
+                            temp = metropolisTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
+                        }
                         bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                         sumColor = sumColor + (invalidPath ? RGBColor() : temp);
                         if (invalidPath) invalidCount++;

@@ -21,12 +21,13 @@
 #include "./header-files/Vectors.h"
 #include "./header-files/World.h"
 
-void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &camera, Ambient &ambient)
+void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &camera, Ambient &ambient, std::string version)
 {   
-    camera.render(objects, lights, ambient);
+    camera.render(objects, lights, ambient, version);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    std::string version = argv[1];
     std::vector<Object*> objects;
     std::vector<Light*> lights;
     Camera *camera;
@@ -120,7 +121,7 @@ int main() {
 
     auto start = std::chrono::high_resolution_clock::now();
     
-    render(objects, lights, (*camera), (*ambient));
+    render(objects, lights, (*camera), (*ambient), version);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);

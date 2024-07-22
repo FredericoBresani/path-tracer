@@ -48,6 +48,30 @@ Common Path tracer            |  Metropolis Light Transport Path tracer
 - Caustics on;
 - Using 1 to 30 permutations by path;
 
+### Execution
+```bash
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer common < test.txt && python ./convert.py
+
+# Open the "path-tracer" directory in the terminal and run the following command to excute the bidirectional path tracer version
+$ g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer bidirectional < test.txt && python ./convert.py
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the metropolis path tracer version
+$ g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer metropolis < test.txt && python ./convert.py
+
+# Or use the shortcuts if you have npm installed
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ npm run start:common
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ npm run start:bidirectional
+
+# Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
+$ npm run start:metropolis
+```
+
+
 ### input format
 #### Spheres
 ```bash
@@ -134,7 +158,7 @@ l l1 l2 l3 R G B s nt nv -0 -0 os ms ns -0 -0 -0 -0
 
 #### Camera
 ```bash
-c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional paths
+c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s paths
 # c: identify a camera
 # h_res: horizontal resolution
 # v_res: vertical resolution
@@ -144,7 +168,6 @@ c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s optional paths
 # (m1, m2, m3): the coordintes of the location the the camera points at
 # p: pixel size
 # s: samples
-# optional: it could be the focal plane distance or the fish eye camera max angle (from 0 to 2PI rad)
 # paths: The number of rays shot per pixel
 ```
 
