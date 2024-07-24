@@ -3,6 +3,9 @@ Here I show some results rendered in a 300x300 resolution with 5 to 7 depth of r
 Using 30 paths per pixel.
 I will compare a comom path tracer, a simple implementation of a bidirectional path tracer and a simple implemetentio of the Metropolis light transport.
 
+## Showcase
+<img src="https://raw.githubusercontent.com/FredericoBresani/path-tracer/main/presets/metropolis-showcase.png">
+
 ### Results
 
 #### A small comparison between the common path tracer and the one with the metropolis light transport - On an edge case where a plane blocks the direct illumination of the light
