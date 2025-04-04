@@ -167,7 +167,7 @@ c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s paths
 # d: distance to the screen
 # (up1, up2, up3): the coordinates of the up vector
 # (l1, l2, l3): the coordinates of the camera location
-# (m1, m2, m3): the coordintes of the location the the camera points at
+# (m1, m2, m3): the coordintes of the location that the camera points at
 # p: pixel size
 # s: samples
 # paths: The number of rays shot per pixel
