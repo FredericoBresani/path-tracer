@@ -16,7 +16,6 @@
 #include "DirectionalPointLight.h"
 #include "MetropolisManager.h"
 
-
 bool inShadow(Ray ray, std::vector<Object*> objects, float lightDistance, HitInfo &info)
 {
     double t = infinity;
@@ -208,18 +207,25 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, std::vector<Light*
         Vec3D auxVec = Vec3D::normalize(hInfo->viewerReflex^hInfo->normal);        
         Vec3D auxNormal = Vec3D::normalize(auxVec^hInfo->normal);
         Vec3D difuseDirection = (hInfo->normal*((double)std::rand()/(double)RAND_MAX)) + (auxVec*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd) + (auxNormal*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxNormal*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd);
-        
-        while (!safeLight) {
-            int index = (int)rand() % lights.size();
-            if (!lights[index]->isExtense()) {
-                l = lights[index];
-                safeLight = true;
+
+        std::random_device rd;
+        std::default_random_engine rng(rd());
+        std::vector<int> random_light_indexes(lights.size());
+        std::iota(random_light_indexes.begin(), random_light_indexes.end(), 0);
+        std::shuffle(random_light_indexes.begin(), random_light_indexes.end(), rng);
+
+        for (int s = 0; s < lights.size() && !safeLight; s++) {
+            if (!lights[random_light_indexes[s]]->isExtense()) {
+                l = lights[random_light_indexes[s]];
+                hInfo->toLight = l->getDirection((*hInfo));
+                if (std::max(hInfo->normal*hInfo->toLight, 0.0) > 0) {
+                    safeLight = true;
+                }
             }
         }
 
         double lightDistance = Vec3D::norma(l->getPos() - hInfo->hit_location);
 
-        hInfo->toLight = l->getDirection((*hInfo));
         hInfo->reflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
 
         if(l->castShadows() && getShadows) {
@@ -343,51 +349,64 @@ RGBColor bidirectionalTrace(const Ray &ray, std::vector<Object*> &objects, std::
         auto difuseDirection = (hInfo->normal*((double)std::rand()/(double)RAND_MAX)) + (auxVec*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd) + (auxNormal*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxNormal*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd);
         auto specularDirection = (hInfo->viewerReflex*ks) + (auxVec*((double)std::rand()/(double)RAND_MAX)) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)) + (auxReflex*((double)std::rand()/(double)RAND_MAX)) + ((auxReflex*(-1.0))*((double)std::rand()/(double)RAND_MAX));
 
-        while (!safeLight) {
-            int index = (int)rand() % lights.size();
-            if (!lights[index]->isExtense()) {
-                l = lights[index];
-                safeLight = true;
+        std::random_device rd;
+        std::default_random_engine rng(rd());
+        std::vector<int> random_light_indexes(lights.size());
+        std::iota(random_light_indexes.begin(), random_light_indexes.end(), 0);
+        std::shuffle(random_light_indexes.begin(), random_light_indexes.end(), rng);
+
+        for (int s = 0; s < lights.size() && !safeLight; s++) {
+            if (!lights[random_light_indexes[s]]->isExtense()) {
+                l = lights[random_light_indexes[s]];
+                hInfo->toLight = l->getDirection((*hInfo));
+                if (std::max(hInfo->normal*hInfo->toLight, 0.0) > 0) {
+                    safeLight = true;
+                }
             }
         }
 
         std::vector<Light*> lightPath = {};
         
         Light *copyL = new PointLight((*l));
-        auto randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
+        auto randomLightDirection = (lightNormal) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
         Light *first = new PointLight((*l));
         lightPath.push_back(first);
-        traceLight(Ray((*l).getPos(), randomLightDirection), objects, copyL, ambient, ambient.depth, lightPath);
+        // traceLight(Ray((*l).getPos(), randomLightDirection), objects, copyL, ambient, ambient.depth, lightPath);
 
         l = nullptr;
         delete copyL;
         first = nullptr;
 
         int successfulPaths = 0;
+        int lightIndex = 0;
         bool pathFound = false;
         for (auto pathLight : lightPath) {
             auto whereIsTheLight = pathLight->getPos();
             auto lightDistance = Vec3D::norma(pathLight->getPos() - hInfo->hit_location);
             
             hInfo->toLight = Vec3D::normalize(pathLight->getDirection((*hInfo)));
+            hInfo->reflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
 
-            auto lightReflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
             if(pathLight->castShadows() && getShadows) {
                 if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
                 { 
                     mixedColor = (((pathLight->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
-                    specularColor = pathLight->getColor()*(ks*pow(std::max(lightReflection*hInfo->toCamera, 0.0), phongExp));
-                    if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
+                    if (objectColor.r == 226) {
+                        int te = 0;
+                    }
+                    specularColor = pathLight->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
+                    if (mixedColor.r + mixedColor.g + mixedColor.b > 10) {
                         pathFound = true;
                         resultingColor = resultingColor + mixedColor + specularColor; 
                         successfulPaths++;
                     }      
-                } else {
-                    if (hInfo->transparent) {
-                        resultingColor = resultingColor + ((objectColor ^ bidirectionalTrace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
-                    }
+                } 
+                if (hInfo->transparent) {
+                    resultingColor = resultingColor + ((objectColor ^ bidirectionalTrace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                 }
+                lightIndex++;
             }
+            
         }
 
         if (pathFound) {
@@ -506,18 +525,26 @@ RGBColor metropolisTrace(const Ray &ray, std::vector<Object*> &objects, std::vec
         auto difuseDirection = (hInfo->normal*((double)std::rand()/(double)RAND_MAX)) + (auxVec*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd) + (auxNormal*((double)std::rand()/(double)RAND_MAX)*kd) + ((auxNormal*(-1.0))*((double)std::rand()/(double)RAND_MAX)*kd);
         auto specularDirection = (hInfo->viewerReflex*ks) + (auxVec*((double)std::rand()/(double)RAND_MAX)) + ((auxVec*(-1.0))*((double)std::rand()/(double)RAND_MAX)) + (auxReflex*((double)std::rand()/(double)RAND_MAX)) + ((auxReflex*(-1.0))*((double)std::rand()/(double)RAND_MAX));
 
-        while (!safeLight) {
-            int index = (int)rand() % lights.size();
-            if (!lights[index]->isExtense()) {
-                l = lights[index];
-                safeLight = true;
+        std::random_device rd;
+        std::default_random_engine rng(rd());
+        std::vector<int> random_light_indexes(lights.size());
+        std::iota(random_light_indexes.begin(), random_light_indexes.end(), 0);
+        std::shuffle(random_light_indexes.begin(), random_light_indexes.end(), rng);
+
+        for (int s = 0; s < lights.size() && !safeLight; s++) {
+            if (!lights[random_light_indexes[s]]->isExtense()) {
+                l = lights[random_light_indexes[s]];
+                hInfo->toLight = l->getDirection((*hInfo));
+                if (std::max(hInfo->normal*hInfo->toLight, 0.0) > 0) {
+                    safeLight = true;
+                }
             }
         }
 
         std::vector<Light*> lightPath = {};
         
         Light *copyL = new PointLight((*l));
-        auto randomLightDirection = (lightNormal*((double)std::rand()/(double)RAND_MAX)) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
+        auto randomLightDirection = (lightNormal) + (lightX*((double)std::rand()/(double)RAND_MAX)) + (lightX*(-1.0)*((double)std::rand()/(double)RAND_MAX)) + (lightZ*((double)std::rand()/(double)RAND_MAX)) + (lightZ*(-1.0)*((double)std::rand()/(double)RAND_MAX)); 
         Light *first = new PointLight((*l));
         lightPath.push_back(first);
         traceLight(Ray((*l).getPos(), randomLightDirection), objects, copyL, ambient, ambient.depth, lightPath);
@@ -527,29 +554,30 @@ RGBColor metropolisTrace(const Ray &ray, std::vector<Object*> &objects, std::vec
         first = nullptr;
 
         int successfulPaths = 0;
+        int lightIndex = 0;
         bool pathFound = false;
         for (auto pathLight : lightPath) {
             auto whereIsTheLight = pathLight->getPos();
             auto lightDistance = Vec3D::norma(pathLight->getPos() - hInfo->hit_location);
             
             hInfo->toLight = Vec3D::normalize(pathLight->getDirection((*hInfo)));
+            hInfo->reflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
 
-            auto lightReflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
             if(pathLight->castShadows() && getShadows) {
                 if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
                 { 
                     mixedColor = (((pathLight->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
-                    specularColor = pathLight->getColor()*(ks*pow(std::max(lightReflection*hInfo->toCamera, 0.0), phongExp));
-                    if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
+                    specularColor = pathLight->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
+                    if (mixedColor.r + mixedColor.g + mixedColor.b > 10) {
                         pathFound = true;
                         resultingColor = resultingColor + mixedColor + specularColor; 
                         successfulPaths++;
-                    }      
-                } else {
-                    if (hInfo->transparent) {
-                        resultingColor = resultingColor + ((objectColor ^ metropolisTrace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, metroManager, i))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                     }
+                }                 
+                if (hInfo->transparent) {
+                    resultingColor = resultingColor + ((objectColor ^ metropolisTrace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, metroManager, i))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                 }
+                lightIndex++;
             }
         }
 
@@ -589,23 +617,22 @@ RGBColor metropolisTrace(const Ray &ray, std::vector<Object*> &objects, std::vec
                 auto lightDistance = Vec3D::norma(pathLight->getPos() - hInfo->hit_location);
                 
                 hInfo->toLight = Vec3D::normalize(pathLight->getDirection((*hInfo)));
+                hInfo->reflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
 
-                auto lightReflection = Vec3D::normalize(((hInfo->normal*2)*(hInfo->normal*hInfo->toLight)) - hInfo->toLight);
                 if(pathLight->castShadows() && getShadows) {
                     if (!inShadow(Ray(hInfo->hit_location, hInfo->toLight), objects, lightDistance, *hInfo))
                     { 
                         mixedColor = (((pathLight->getColor()^objectColor)*reflectiveness)/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
-                        specularColor = pathLight->getColor()*(ks*pow(std::max(lightReflection*hInfo->toCamera, 0.0), phongExp));
-                        if (mixedColor.r > 0 || mixedColor.g > 0 || mixedColor.b > 0) {
+                        specularColor = pathLight->getColor()*(ks*pow(std::max(hInfo->reflection*hInfo->toCamera, 0.0), phongExp));
+                        if (mixedColor.r + mixedColor.g + mixedColor.b > 10) {
                             pathFound = true;
                             resultingGoodPathColor = resultingGoodPathColor + mixedColor; 
                             successfulPaths++;
                         }      
-                    } else {
-                        if (hInfo->transparent) {
-                            std::shared_ptr<MetropolisManager> tempManager(new MetropolisManager());
-                            resultingGoodPathColor = resultingGoodPathColor + ((objectColor ^ metropolisTrace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, tempManager, i))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
-                        }
+                    } 
+                    if (hInfo->transparent) {
+                        std::shared_ptr<MetropolisManager> tempManager(new MetropolisManager());
+                        resultingGoodPathColor = resultingGoodPathColor + ((objectColor ^ metropolisTrace(Ray(hInfo->hit_location, hInfo->toLight), objects, lights, ambient, depth - 1, lightX, lightNormal, lightZ, tempManager, i))/255.0)*std::max(hInfo->normal*hInfo->toLight, 0.0);
                     }
                 }
             }

@@ -51,9 +51,9 @@ void PinholeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &l
             A = vertices[0];
             B = vertices[1];
             C = vertices[2];
-            lightX = Vec3D::normalize(B - A);
             lightNormal = Vec3D::normalize((B - A) ^ (C - A));
-            lightZ = Vec3D::normalize(lightX ^ lightNormal);
+            lightX = Vec3D::normalize((B - A) + (lightNormal));            
+            lightZ = Vec3D::normalize(((B - A) ^ lightNormal) + lightNormal);
             j = lights.size();
         }
     }

@@ -28,11 +28,10 @@ class ScreenThread {
             
             Vec3D down;
             Vec3D dir;
-    
+
             for (int i = minIndex; i < maxIndex; i++) {
                 down = camera.getIUP() * (-1.0) * (i / camera.getPixelsH());
                 dir = toPixel + down + (camera.getRight() * (i % camera.getPixelsH())); 
-                
                 RGBColor sumColor;
                 int invalidCount = 0;
                 // anti-aliasing 
