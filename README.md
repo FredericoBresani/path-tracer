@@ -66,11 +66,20 @@ $ g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer metropolis < test
 # Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
 $ npm run start:common
 
+# You can do the same but using the --all-lights flag. That will consider all the lights in the scene to trace the image
+$ npm run start:common-all-lights
+
 # Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
 $ npm run start:bidirectional
 
+# You can do the same but using the --all-lights flag. That will consider all the lights in the scene to trace the image
+$ npm run start:bidirectional-all-lights
+
 # Open the "path-tracer" directory in the terminal and run the following command to execute the common path tracer version
 $ npm run start:metropolis
+
+# You can do the same but using the --all-lights flag. That will consider all the lights in the scene to trace the image
+$ npm run start:metropolis-all-lights
 ```
 
 
@@ -160,7 +169,7 @@ l l1 l2 l3 R G B s nt nv -0 -0 os ms ns -0 -0 -0 -0
 
 #### Camera
 ```bash
-c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s paths
+c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s paths optional
 # c: identify a camera
 # h_res: horizontal resolution
 # v_res: vertical resolution
@@ -171,6 +180,7 @@ c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s paths
 # p: pixel size
 # s: samples
 # paths: The number of rays shot per pixel
+# optional: it could be the focal plane distance or the fish eye camera max angle (from 0 to 2PI rad)
 ```
 
 -----

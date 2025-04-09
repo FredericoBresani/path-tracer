@@ -21,13 +21,19 @@
 #include "./header-files/Vectors.h"
 #include "./header-files/World.h"
 
-void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &camera, Ambient &ambient, std::string version)
+
+
+void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Camera &camera, Ambient &ambient, std::string version, std::string light_option)
 {   
-    camera.render(objects, lights, ambient, version);
+    camera.render(objects, lights, ambient, version, light_option);
 }
 
 int main(int argc, char *argv[]) {
     std::string version = argv[1];
+    std::string light_option = "";
+    if (argv[2]) {
+        light_option = argv[2];
+    }
     std::vector<Object*> objects;
     std::vector<Light*> lights;
     Camera *camera;
@@ -108,7 +114,7 @@ int main(int argc, char *argv[]) {
             } 
             case 'a':
             {
-                ambient = new Ambient(RGBColor(_1, _2, _3), _4, _5, _6);
+                ambient = new Ambient(RGBColor(_1, _2, _3), RGBColor(_4, _5, _6), _7, _8, _9);
                 break;
             }
             default:
@@ -121,7 +127,7 @@ int main(int argc, char *argv[]) {
 
     auto start = std::chrono::high_resolution_clock::now();
     
-    render(objects, lights, (*camera), (*ambient), version);
+    render(objects, lights, (*camera), (*ambient), version, light_option);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);

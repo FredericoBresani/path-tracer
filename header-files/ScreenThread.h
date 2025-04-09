@@ -24,7 +24,7 @@ class ScreenThread {
         }
         ~ScreenThread() {}
 
-        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> &objects, Camera &camera, std::vector<Light*> &lights, Ambient &ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, std::string version) {
+        void operator()(std::mutex &lock, Vec3D toPixel, std::vector<Object*> &objects, Camera &camera, std::vector<Light*> &lights, Ambient &ambient, Vec3D lightX, Vec3D lightNormal, Vec3D lightZ, std::string version, std::string light_option) {
             
             Vec3D down;
             Vec3D dir;
@@ -50,11 +50,11 @@ class ScreenThread {
                     for (uint32_t j = 0; j < camera.getNPaths(); j++) {
                         RGBColor temp;
                         if (version == "common") {
-                            temp = trace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth);
+                            temp = trace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, light_option);
                         } else if (version == "bidirectional") {
-                            temp = bidirectionalTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ);
+                            temp = bidirectionalTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, light_option);
                         } else if (version == "metropolis") {
-                            temp = metropolisTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i);
+                            temp = metropolisTrace(Ray(camera.getPos(), dir + sampleX + sampleY), objects, lights, ambient, ambient.depth, lightX, lightNormal, lightZ, metropolis_manager, i, light_option);
                         }
                         bool invalidPath = (std::isnan(temp.r) || std::isnan(temp.g) || std::isnan(temp.b));
                         sumColor = sumColor + (invalidPath ? RGBColor() : temp);

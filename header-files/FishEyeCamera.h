@@ -1,20 +1,17 @@
-#ifndef __PINHOLE__
-#define __PINHOLE__
-
+#ifndef __FISHEYECAMERA__
+#define __FISHEYECAMERA__
 
 #include "Camera.h"
-#include "World.h"
 #include <iostream>
+#include "World.h"
 #include "Light.h"
-#include "ScreenThread.h"
 #include "Screen.h"
-#include "MetropolisManager.h"
+#include "ScreenThread.h"
 #include "JitteredSampler.h"
 
-
-class PinholeCamera: public Camera {
-    public:
-        PinholeCamera(int _hr, int _vr, double d, const Vec3D& _up, const Point3D& pos, const Point3D &_lookAt, float p, int s, int pths) {
+class FishEyeCamera : public Camera {
+    public: 
+        FishEyeCamera(int _hr, int _vr, double d, const Vec3D& _up, const Point3D& pos, const Point3D& _lookAt, float p, int s, int pths, double fAngle) {
             h_res = _hr;
             v_res = _vr;
             distance = d;
@@ -24,23 +21,25 @@ class PinholeCamera: public Camera {
             pixel_size = p;
             n_samples_aliasing = s;
             paths = pths;
+            fish_eye_angle = fAngle*M_PI;
         }
-        ~PinholeCamera() {}
+        ~FishEyeCamera() {}
         void setSampler();
         void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version, std::string light_option);
 };
 
-void PinholeCamera::setSampler() {
+void FishEyeCamera::setSampler() {
     sampler_ptr = new JitteredSampler(n_samples_aliasing);
 }
 
-void PinholeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version, std::string light_option)
+void FishEyeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version, std::string light_option)
 {
     auto toPixel = w*distance + right*(-pixel_qtn_h/2.0) + iup*(pixel_qtn_v/2.0) - (this->iup/2.0) + (this->right/2.0); //while using anti-aliasing there is no need to be in the center of the pixel
     Vec3D down;
     Vec3D dir;
     screen->setPixelQtn(pixel_qtn_h*pixel_qtn_v);
     Vec3D lightX, lightNormal, lightZ;
+
     for (uint32_t j = 0; j < lights.size(); j++) {  
         if (lights[j]->isExtense() && lights[j]->getLightModel()->getObjectType() == 't') {
             Point3D A, B, C;
@@ -62,7 +61,7 @@ void PinholeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &l
             threads.push_back(
                 std::thread(
                     ScreenThread(i, start, pixel_qtn_h*pixel_qtn_v, screen),
-                    std::ref(screen->lock), 
+                    std::ref(lock), 
                     std::ref(toPixel),
                     std::ref(objects),
                     std::ref((*this)),
@@ -79,7 +78,7 @@ void PinholeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &l
             threads.push_back(
                 std::thread(
                     ScreenThread(i, start, end, screen), 
-                    std::ref(screen->lock), 
+                    std::ref(lock), 
                     std::ref(toPixel),
                     std::ref(objects),
                     std::ref((*this)),
@@ -101,7 +100,7 @@ void PinholeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &l
     }
     std::cout << " [==============================] 100% \n";
     
-    /*// testing inconsitency
+    /* testing inconsitency
     std::ofstream MyFile ("output.txt");
     for (auto pixel : screen->pixels) {
         MyFile << "RGBColor(" << pixel.r << ", " << pixel.g << ", " << pixel.b << ");\n";
@@ -110,11 +109,11 @@ void PinholeCamera::render(std::vector<Object*> &objects, std::vector<Light*> &l
     
     std::ofstream pixelOutput("./image.ppm", std::ios::out | std::ios::binary);
     pixelOutput << "P6\n" << pixel_qtn_h << " " << pixel_qtn_v << "\n255\n";
-    for (auto pixel : screen->pixels)
+    for (auto pixel : (*screen).pixels)
     {
-        pixelOutput <<  (unsigned char)(std::min(double(255), pixel.r)) <<
-                        (unsigned char)(std::min(double(255), pixel.g)) <<
-                        (unsigned char)(std::min(double(255), pixel.b));
+        pixelOutput <<  (unsigned char)(std::max(double(1), pixel.r)) <<
+                        (unsigned char)(std::max(double(1), pixel.g)) <<
+                        (unsigned char)(std::max(double(1), pixel.b));
     }
     pixelOutput.close();
 }

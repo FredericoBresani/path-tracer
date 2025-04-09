@@ -6,8 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:common": "g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer common < test.txt && python ./convert.py",
+    "start:common-all-lights": "g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer common --all-lights < test.txt && python ./convert.py",
     "start:bidirectional": "g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer bidirectional < test.txt && python ./convert.py",
+    "start:bidirectional-all-lights": "g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer bidirectional --all-lights < test.txt && python ./convert.py",
     "start:metropolis": "g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer metropolis < test.txt && python ./convert.py",
+    "start:metropolis-all-lights": "g++ path-tracer.cpp -std=c++17 -o path-tracer && path-tracer metropolis --all-lights < test.txt && python ./convert.py",
     "build": "g++ path-tracer.cpp -std=c++17 -o path-tracer"
   },
   "repository": {

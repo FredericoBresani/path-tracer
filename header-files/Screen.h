@@ -8,6 +8,7 @@ class Screen {
     public:
         int donePixels = 0;
         std::vector<RGBColor> pixels;
+        std::mutex lock;
 
         Screen() {}
         Screen(int pixelQtn) {

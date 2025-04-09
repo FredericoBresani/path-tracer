@@ -2,10 +2,12 @@
 #define __CAMERA__
 
 #include "Points.h"
+#include <iostream>
 #include "Object.h"
 #include "Light.h"
 #include "Sampler.h"
 #include "JitteredSampler.h"
+#include "Screen.h"
 
 class Camera {
     public:
@@ -14,12 +16,20 @@ class Camera {
         int getHr();
         int getVr();
         int getNPaths();
+        double getFishEyeAngle();
         Vec3D getIUP();
         Vec3D getRight();
+        Vec3D getU();
+        Vec3D getV();
+        Vec3D getW();
+        Point2D worldToScreenCoordinates(const Point3D& point);
+        Point3D worldToCameraCoordinates(const Point3D& point);
         int getPixelsH();
-        virtual void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version);
+        virtual void render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version, std::string light_option);
         virtual void setSampler() = 0;
+        void setScreen();
         Sampler* getSampler();
+        std::shared_ptr<Screen> screen;
         
         
     protected:
@@ -28,10 +38,11 @@ class Camera {
         double distance, pixel_size, focal_distance, fish_eye_angle;
         Vec3D up, u, v, w, right, iup;
         Point3D camera_pos, look_at;
+        
 
 };
 
-void Camera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version) {}
+void Camera::render(std::vector<Object*> &objects, std::vector<Light*> &lights, Ambient &ambient, std::string version, std::string light_option) {}
 
 Sampler* Camera::getSampler() {
     return sampler_ptr;
@@ -59,6 +70,7 @@ void Camera::makeCamera()
         iup = v*(2.0/pixel_qtn_v); 
     }
     this->setSampler();
+    this->setScreen();
 }
 
 int Camera::getHr()
@@ -86,6 +98,32 @@ Vec3D Camera::getIUP()
     return this->iup;
 }
 
+Vec3D Camera::getU() {
+    return u;
+}
+
+Vec3D Camera::getV() {
+    return v;
+}
+
+Vec3D Camera::getW() {
+    return w;
+}
+
+Point3D Camera::worldToCameraCoordinates(const Point3D& point) {
+    Vec3D worldPoint = point - camera_pos; // litle cheating here, using a vector as a point
+    double x = (w.x*(worldPoint.x)) + (w.y*(worldPoint.y)) + (w.z*(worldPoint.z));
+    double y = (v.x*(worldPoint.x)) + (v.y*(worldPoint.y)) + (v.z*(worldPoint.z));
+    double z = (u.x*(worldPoint.x)) + (u.y*(worldPoint.y)) + (u.z*(worldPoint.z));
+    return Point3D(z, y, x); // Remenber that the base order is like that
+}
+
+Point2D Camera::worldToScreenCoordinates(const Point3D& point) {           //this is a point on the screen already, althoug in world coordinates                                       
+    Point3D cameraCoordinates = Camera::worldToCameraCoordinates(point); //that is why no projection is needed
+    return Point2D(cameraCoordinates.x, cameraCoordinates.y);
+}
+
+
 Vec3D Camera::getRight()
 {
     return this->right;
@@ -96,8 +134,17 @@ int Camera::getPixelsH()
     return this->pixel_qtn_h;
 }
 
+double Camera::getFishEyeAngle()
+{
+    return this->fish_eye_angle;
+}
+
 void Camera::setSampler() {
     sampler_ptr = new JitteredSampler(n_samples_aliasing);
+}
+
+void Camera::setScreen() {
+    screen = std::make_shared<Screen>();
 }
 
 #endif
