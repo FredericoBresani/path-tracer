@@ -187,8 +187,9 @@ c h_res v_res d up1 up2 up3 l1 l2 l3 m1 m2 m3 p s paths optional
 
 #### Ambient:
 ```bash
-a R G B ir depth nThreads
+a R G B RB GB BB ir depth nThreads
 # (R, G, B): The ambient light color
+# (RB, GB, BB): The ambient background color
 # ir: The ambient reflectiveness coeficient
 # depth: This is the depth the ray-tracer will use
 # nThreads: The amount of threads used to render the scene

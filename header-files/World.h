@@ -79,7 +79,6 @@ void traceLight(const Ray &ray, std::vector<Object*> &objects, Light* &light, Am
 
     if (hInfo->hit_object) {
         auto reflectiveness = 1.0 + ambient.ir;
-        auto distanceToIntersection = Vec3D::norma(ray.origin - hInfo->hit_location);
         auto safeLight = false;
         RGBColor resultingColor, mixedColor, specularColor;
         auto hitPoint = hInfo->hit_location + hInfo->normal*0.001;
@@ -195,7 +194,6 @@ RGBColor trace(const Ray &ray, std::vector<Object*> &objects, std::vector<Light*
     }
     if (hInfo->hit_object) {
         double reflectiveness = 1.0 + ambient.ir;
-        double distanceToIntersection = Vec3D::norma(ray.origin - hInfo->hit_location);
         bool safeLight = false;
         RGBColor resultingColor, mixedColor, specularColor;
         Point3D hitPoint = hInfo->hit_location + hInfo->normal*0.001;
@@ -369,7 +367,6 @@ RGBColor bidirectionalTrace(const Ray &ray, std::vector<Object*> &objects, std::
     }
     if (hInfo->hit_object) {
         auto reflectiveness = 1.0 + ambient.ir;
-        auto distanceToIntersection = Vec3D::norma(ray.origin - hInfo->hit_location);
         auto safeLight = false;
         RGBColor resultingColor, mixedColor, specularColor, resultingGoodPathColor;
         auto hitPoint = hInfo->hit_location + hInfo->normal*0.001;
@@ -605,7 +602,6 @@ RGBColor metropolisTrace(const Ray &ray, std::vector<Object*> &objects, std::vec
     }
     if (hInfo->hit_object) {
         auto reflectiveness = 1.0 + ambient.ir;
-        auto distanceToIntersection = Vec3D::norma(ray.origin - hInfo->hit_location);
         auto safeLight = false;
         RGBColor resultingColor, mixedColor, specularColor, resultingGoodPathColor;
         auto hitPoint = hInfo->hit_location + hInfo->normal*0.001;
